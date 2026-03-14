@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ficha Técnica de Proyecto — Amazonia Construcción</title>
+  <meta name="description" content="Genera la ficha técnica de tu proyecto de construcción en PDF." />
+  <link rel="icon" type="image/svg+xml" href="assets/logo.svg" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="css/styles.css" />
+  <!-- PDF Libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+  </style>
+</head>
+<body class="bg-[#F8F5F0]">
+
+  <!-- ══════════════ NAVBAR ══════════════ -->
+  <nav class="amazonia-navbar">
+    <div class="max-w-screen-2xl mx-auto px-6 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <a href="index.html" class="flex items-center gap-3 nav-logo">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 70 70" width="40" height="40">
+            <circle cx="35" cy="35" r="32" fill="rgba(255,255,255,0.15)"/>
+            <circle cx="35" cy="35" r="29" fill="none" stroke="rgba(116,198,157,0.5)" stroke-width="1"/>
+            <polygon points="35,8 58,55 12,55" fill="none" stroke="white" stroke-width="2.5" stroke-linejoin="round"/>
+            <line x1="21" y1="40" x2="49" y2="40" stroke="#D4A017" stroke-width="2.5" stroke-linecap="round"/>
+            <polygon points="35,4 42,18 28,18" fill="#74C69D"/>
+            <rect x="33" y="17" width="4" height="4" fill="#74C69D" rx="0.5"/>
+            <rect x="30" y="44" width="5" height="5" fill="#D4A017" rx="0.5" opacity="0.9"/>
+            <rect x="39" y="44" width="5" height="5" fill="#D4A017" rx="0.5" opacity="0.9"/>
+          </svg>
+          <div>
+            <div class="nav-brand-text" style="font-size:1.15rem;">AMAZONIA</div>
+            <div class="nav-brand-sub">Construcción</div>
+          </div>
+        </a>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <a href="index.html" class="text-white/70 hover:text-white text-sm transition-colors flex items-center gap-1.5">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+          </svg>
+          Inicio
+        </a>
+        <span class="text-white/20">|</span>
+        <span class="text-white/90 text-sm font-medium">Ficha Técnica</span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ══════════════ PAGE HEADER ══════════════ -->
+  <div class="page-header">
+    <div class="max-w-screen-2xl mx-auto px-6">
+      <div class="breadcrumb">
+        <a href="index.html">Inicio</a>
+        <span class="breadcrumb-separator">/</span>
+        <span class="text-white/80">Ficha Técnica de Proyecto</span>
+      </div>
+      <div class="flex items-center justify-between flex-wrap gap-4">
+        <div>
+          <h1 class="text-xl font-bold text-white" style="font-family: Georgia, serif; letter-spacing: 0.5px;">
+            Ficha Técnica de Proyecto
+          </h1>
+          <p class="text-white/60 text-sm mt-1">Complete los campos y descargue el PDF profesional</p>
+        </div>
+        <div class="flex items-center gap-2 text-xs text-white/50 bg-white/10 px-3 py-1.5 rounded-full border border-white/15">
+          <span class="w-2 h-2 rounded-full bg-[#74C69D]"></span>
+          Vista previa en tiempo real
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════ MAIN CONTENT ══════════════ -->
+  <div class="max-w-screen-2xl mx-auto px-4 md:px-6 py-8">
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-8 items-start">
+
+      <!-- ═══════════ LEFT: FORM ═══════════ -->
+      <div class="space-y-5 animate-slide-left">
+
+        <!-- Action Buttons (top) -->
+        <div class="flex flex-wrap gap-3 mb-2">
+          <button id="btn-download" class="btn btn-gold btn-lg flex-1 sm:flex-none">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+            Descargar PDF
+          </button>
+          <button id="btn-preview" class="btn btn-outline flex-1 sm:flex-none">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+            </svg>
+            Previsualizar PDF
+          </button>
+          <button id="btn-reset" class="btn btn-danger-outline">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+            </svg>
+            Limpiar
+          </button>
+        </div>
+
+        <form id="ficha-form" novalidate>
+
+          <!-- ── Section 1: Información General ── -->
+          <div class="form-section">
+            <div class="form-section-header">
+              <div class="section-icon">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="1.5" width="12" height="13" rx="1.5" stroke="white" stroke-width="1.5"/><line x1="4.5" y1="5.5" x2="11.5" y2="5.5" stroke="white" stroke-width="1.2" stroke-linecap="round"/><line x1="4.5" y1="8" x2="11.5" y2="8" stroke="white" stroke-width="1.2" stroke-linecap="round"/><line x1="4.5" y1="10.5" x2="8.5" y2="10.5" stroke="white" stroke-width="1.2" stroke-linecap="round"/></svg>
+              </div>
+              Información General del Proyecto
+            </div>
+            <div class="p-5 space-y-4">
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="sm:col-span-2 form-group">
+                  <label class="form-label" for="nombre-proyecto">
+                    Nombre del Proyecto <span class="required-star">*</span>
+                  </label>
+                  <input type="text" id="nombre-proyecto" name="nombreProyecto"
+                    class="form-input" placeholder="Ej: Edificio Residencial Las Palmas"
+                    required autocomplete="off" />
+                  <div class="field-error" id="error-nombre" style="display:none;">
+                    ⚠ El nombre del proyecto es obligatorio.
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="fecha">
+                    Fecha <span class="required-star">*</span>
+                  </label>
+                  <input type="date" id="fecha" name="fecha"
+                    class="form-input" required />
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="tipo-obra">Tipo de Obra</label>
+                  <select id="tipo-obra" name="tipoObra" class="form-select">
+                    <option value="">— Seleccionar —</option>
+                    <option value="Residencial">Residencial</option>
+                    <option value="Comercial">Comercial</option>
+                    <option value="Industrial">Industrial</option>
+                    <option value="Institucional">Institucional</option>
+                  </select>
+                </div>
+
+                <div class="sm:col-span-2 form-group">
+                  <label class="form-label" for="ubicacion">Ubicación / Dirección</label>
+                  <input type="text" id="ubicacion" name="ubicacion"
+                    class="form-input" placeholder="Ej: Calle 123 # 45-67, Bogotá, Colombia"
+                    autocomplete="off" />
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="arquitecto">Arquitecto / Director de Obra</label>
+                  <input type="text" id="arquitecto" name="arquitecto"
+                    class="form-input" placeholder="Nombre completo"
+                    autocomplete="off" />
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="num-documento">N° de Documento</label>
+                  <input type="text" id="num-documento" name="numDocumento"
+                    class="form-input" placeholder="Ej: FT-2025-001"
+                    autocomplete="off" />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="descripcion">Descripción del Proyecto</label>
+                <textarea id="descripcion" name="descripcion"
+                  class="form-textarea" rows="4"
+                  placeholder="Describa detalladamente el proyecto de construcción, sus características principales, objetivos y alcance..."></textarea>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- ── Section 2: Datos Técnicos ── -->
+          <div class="form-section">
+            <div class="form-section-header">
+              <div class="section-icon">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 14L14 2" stroke="white" stroke-width="1.5" stroke-linecap="round"/><path d="M2 14h3.5V10.5H9V7h3.5V3.5H14" stroke="white" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              Datos Técnicos y Presupuestales
+            </div>
+            <div class="p-5">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+                <div class="form-group">
+                  <label class="form-label" for="area-total">Área Total del Lote (m²)</label>
+                  <div class="relative">
+                    <input type="number" id="area-total" name="areaTotal"
+                      class="form-input pr-12" placeholder="0.00"
+                      min="0" step="0.01" />
+                    <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-[#6B7280] font-medium">m²</span>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="area-construida">Área Construida (m²)</label>
+                  <div class="relative">
+                    <input type="number" id="area-construida" name="areaConstruida"
+                      class="form-input pr-12" placeholder="0.00"
+                      min="0" step="0.01" />
+                    <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-[#6B7280] font-medium">m²</span>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="presupuesto">Presupuesto Total (COP)</label>
+                  <div class="relative">
+                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-[#6B7280] text-sm font-medium">$</span>
+                    <input type="text" id="presupuesto" name="presupuesto"
+                      class="form-input pl-7" placeholder="0"
+                      autocomplete="off" inputmode="numeric" />
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="plazo">Plazo de Ejecución (días)</label>
+                  <div class="relative">
+                    <input type="number" id="plazo" name="plazo"
+                      class="form-input pr-14" placeholder="0"
+                      min="0" step="1" />
+                    <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-[#6B7280] font-medium">días</span>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <!-- ── Section 3: Especificaciones Técnicas ── -->
+          <div class="form-section">
+            <div class="form-section-header">
+              <div class="section-icon">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10.5 2.5a3 3 0 0 1 0 4.243L4.243 12.95a1 1 0 0 1-1.414 0L2.05 11.17a1 1 0 0 1 0-1.413L8.257 3.55A3 3 0 0 1 10.5 2.5z" stroke="white" stroke-width="1.4"/><line x1="8" y1="5" x2="11" y2="8" stroke="white" stroke-width="1.3" stroke-linecap="round"/></svg>
+              </div>
+              Especificaciones Técnicas
+            </div>
+            <div class="p-5 space-y-4">
+
+              <div class="form-group">
+                <label class="form-label" for="especificaciones">Especificaciones Técnicas</label>
+                <textarea id="especificaciones" name="especificaciones"
+                  class="form-textarea" rows="5"
+                  placeholder="Detalle las especificaciones técnicas del proyecto:&#10;• Materiales a utilizar&#10;• Sistemas constructivos&#10;• Normas y estándares aplicables&#10;• Requisitos especiales..."></textarea>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="notas">Notas Adicionales</label>
+                <textarea id="notas" name="notas"
+                  class="form-textarea" rows="3"
+                  placeholder="Observaciones, condiciones especiales, requerimientos del cliente..."></textarea>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- ── Section 4: Imágenes ── -->
+          <div class="form-section">
+            <div class="form-section-header">
+              <div class="section-icon">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="1.5" y="1.5" width="13" height="13" rx="1.5" stroke="white" stroke-width="1.5"/><line x1="1.5" y1="5.5" x2="14.5" y2="5.5" stroke="white" stroke-width="1"/><line x1="6" y1="5.5" x2="6" y2="14.5" stroke="white" stroke-width="1"/><line x1="3.5" y1="8" x2="4.5" y2="8" stroke="white" stroke-width="1" stroke-linecap="round"/><line x1="8.5" y1="8" x2="13" y2="8" stroke="white" stroke-width="1" stroke-linecap="round"/><line x1="8.5" y1="10.5" x2="11" y2="10.5" stroke="white" stroke-width="1" stroke-linecap="round"/></svg>
+              </div>
+              Planos e Imágenes del Proyecto
+            </div>
+            <div class="p-5 space-y-5">
+
+              <!-- Plano 1 -->
+              <div class="form-group">
+                <label class="form-label">Plano 1</label>
+                <div class="file-upload-area" id="upload-area-1">
+                  <input type="file" id="plano1" name="plano1" accept="image/*" />
+                  <span class="file-upload-icon">
+                    <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="2" width="24" height="24" rx="3" stroke="#40916C" stroke-width="1.5"/><line x1="2" y1="9" x2="26" y2="9" stroke="#40916C" stroke-width="1"/><line x1="10" y1="9" x2="10" y2="26" stroke="#40916C" stroke-width="1"/><circle cx="19" cy="17" r="3" stroke="#D4A017" stroke-width="1.5"/><line x1="4.5" y1="13" x2="8" y2="13" stroke="#40916C" stroke-width="1.2" stroke-linecap="round"/><line x1="4.5" y1="16" x2="8" y2="16" stroke="#40916C" stroke-width="1.2" stroke-linecap="round"/></svg>
+                  </span>
+                  <div class="file-upload-label">
+                    <strong>Haga clic</strong> o arrastre una imagen<br/>
+                    <span class="text-xs text-[#9CA3AF]">PNG, JPG, WEBP hasta 10MB</span>
+                  </div>
+                </div>
+                <div class="file-preview-container" id="preview-plano1"></div>
+              </div>
+
+              <!-- Plano 2 -->
+              <div class="form-group">
+                <label class="form-label">Plano 2</label>
+                <div class="file-upload-area" id="upload-area-2">
+                  <input type="file" id="plano2" name="plano2" accept="image/*" />
+                  <span class="file-upload-icon">
+                    <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="2" width="24" height="24" rx="3" stroke="#40916C" stroke-width="1.5"/><line x1="2" y1="9" x2="26" y2="9" stroke="#40916C" stroke-width="1"/><line x1="10" y1="9" x2="10" y2="26" stroke="#40916C" stroke-width="1"/><circle cx="19" cy="17" r="3" stroke="#D4A017" stroke-width="1.5"/><line x1="4.5" y1="13" x2="8" y2="13" stroke="#40916C" stroke-width="1.2" stroke-linecap="round"/><line x1="4.5" y1="16" x2="8" y2="16" stroke="#40916C" stroke-width="1.2" stroke-linecap="round"/></svg>
+                  </span>
+                  <div class="file-upload-label">
+                    <strong>Haga clic</strong> o arrastre una imagen<br/>
+                    <span class="text-xs text-[#9CA3AF]">PNG, JPG, WEBP hasta 10MB</span>
+                  </div>
+                </div>
+                <div class="file-preview-container" id="preview-plano2"></div>
+              </div>
+
+              <!-- Plano 3 -->
+              <div class="form-group">
+                <label class="form-label">Plano 3</label>
+                <div class="file-upload-area" id="upload-area-3">
+                  <input type="file" id="plano3" name="plano3" accept="image/*" />
+                  <span class="file-upload-icon">
+                    <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="2" width="24" height="24" rx="3" stroke="#40916C" stroke-width="1.5"/><line x1="2" y1="9" x2="26" y2="9" stroke="#40916C" stroke-width="1"/><line x1="10" y1="9" x2="10" y2="26" stroke="#40916C" stroke-width="1"/><circle cx="19" cy="17" r="3" stroke="#D4A017" stroke-width="1.5"/><line x1="4.5" y1="13" x2="8" y2="13" stroke="#40916C" stroke-width="1.2" stroke-linecap="round"/><line x1="4.5" y1="16" x2="8" y2="16" stroke="#40916C" stroke-width="1.2" stroke-linecap="round"/></svg>
+                  </span>
+                  <div class="file-upload-label">
+                    <strong>Haga clic</strong> o arrastre una imagen<br/>
+                    <span class="text-xs text-[#9CA3AF]">PNG, JPG, WEBP hasta 10MB</span>
+                  </div>
+                </div>
+                <div class="file-preview-container" id="preview-plano3"></div>
+              </div>
+
+              <!-- Logo Cliente -->
+              <div class="form-group">
+                <label class="form-label">Logo del Cliente <span class="text-[#9CA3AF] font-normal text-xs">(opcional)</span></label>
+                <div class="file-upload-area" id="upload-area-logo">
+                  <input type="file" id="logo-cliente" name="logoCliente" accept="image/*" />
+                  <span class="file-upload-icon">
+                    <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="8" width="22" height="17" rx="2" stroke="#40916C" stroke-width="1.5"/><path d="M9 8V5h10v3" stroke="#40916C" stroke-width="1.5" stroke-linecap="round"/><rect x="11" y="15" width="6" height="10" rx="1" stroke="#D4A017" stroke-width="1.2"/><rect x="7" y="13" width="4" height="4" rx="0.5" stroke="#40916C" stroke-width="1"/><rect x="17" y="13" width="4" height="4" rx="0.5" stroke="#40916C" stroke-width="1"/></svg>
+                  </span>
+                  <div class="file-upload-label">
+                    <strong>Haga clic</strong> para subir el logo del cliente<br/>
+                    <span class="text-xs text-[#9CA3AF]">PNG, JPG, SVG hasta 5MB</span>
+                  </div>
+                </div>
+                <div class="file-preview-container" id="preview-logo-cliente"></div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Bottom action buttons -->
+          <div class="flex flex-wrap gap-3 pt-2">
+            <button type="button" id="btn-download-bottom" class="btn btn-gold btn-lg flex-1">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+              </svg>
+              Descargar PDF
+            </button>
+            <button type="button" id="btn-reset-bottom" class="btn btn-danger-outline">
+              Limpiar Formulario
+            </button>
+          </div>
+
+        </form>
+      </div>
+
+      <!-- ═══════════ RIGHT: PREVIEW ═══════════ -->
+      <div class="animate-slide-right">
+        <div class="preview-panel" id="preview-panel">
+          <div class="preview-panel-header">
+            <div class="flex items-center">
+              <span class="preview-dot"></span>
+              Vista Previa del PDF
+            </div>
+            <span class="text-white/50 text-xs font-normal normal-case" style="letter-spacing: 0;">
+              A4 · 794 × 1123 px
+            </span>
+          </div>
+          <div class="preview-scroll-container" id="preview-scroll">
+            <div class="preview-wrapper">
+              <div class="preview-scale" id="preview-scale-wrapper">
+                <div id="pdf-preview-container">
+                  <!-- Preview HTML injected here by JS -->
+                  <div style="width:794px; min-height:1123px; background:white; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:20px; box-shadow: 0 4px 30px rgba(0,0,0,0.2);">
+                    <svg width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity:0.25;">
+                      <rect x="10" y="4" width="36" height="48" rx="3" stroke="#1B4332" stroke-width="2.5"/>
+                      <line x1="18" y1="18" x2="38" y2="18" stroke="#1B4332" stroke-width="2" stroke-linecap="round"/>
+                      <line x1="18" y1="25" x2="38" y2="25" stroke="#1B4332" stroke-width="2" stroke-linecap="round"/>
+                      <line x1="18" y1="32" x2="30" y2="32" stroke="#1B4332" stroke-width="2" stroke-linecap="round"/>
+                      <rect x="18" y="39" width="20" height="8" rx="1.5" stroke="#D4A017" stroke-width="1.8"/>
+                    </svg>
+                    <p style="color:#9CA3AF; font-size:14px; font-family: Arial, sans-serif; text-align:center; max-width:280px; line-height:1.7; font-weight:400;">
+                      Complete los campos del formulario para ver la vista previa del PDF
+                    </p>
+                    <div style="width:48px; height:2px; background: linear-gradient(90deg, #1B4332, #40916C); border-radius:2px;"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════════ TOAST CONTAINER ══════════════ -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- ══════════════ CONFIRM MODAL ══════════════ -->
+  <div class="modal-overlay" id="confirm-modal" style="display:none;">
+    <div class="modal-box">
+      <div class="text-center mb-6">
+        <div class="w-16 h-16 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-4">
+          <svg class="w-8 h-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+          </svg>
+        </div>
+        <h3 class="text-lg font-bold text-[#1A1A1A] mb-2">Limpiar Formulario</h3>
+        <p class="text-sm text-[#6B7280] leading-relaxed">
+          ¿Está seguro que desea limpiar todos los campos? Esta acción no se puede deshacer y se perderán todos los datos ingresados, incluyendo las imágenes cargadas.
+        </p>
+      </div>
+      <div class="flex gap-3">
+        <button id="confirm-cancel" class="btn btn-outline flex-1">
+          Cancelar
+        </button>
+        <button id="confirm-accept" class="btn flex-1" style="background: linear-gradient(135deg,#DC2626,#B91C1C); color:white; box-shadow: 0 4px 12px rgba(220,38,38,0.3);">
+          Sí, Limpiar Todo
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/pdf-template.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
