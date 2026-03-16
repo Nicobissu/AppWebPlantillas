@@ -3,12 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Ficha Técnica de Proyecto — Amazonia Construcción</title>
-  <meta name="description" content="Genera la ficha técnica de tu proyecto de construcción en PDF." />
+  <title>Cotización — Amazonia SAS</title>
   <link rel="icon" type="image/svg+xml" href="assets/logo.svg" />
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="css/styles.css" />
-  <!-- PDF Libraries -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
@@ -17,28 +15,23 @@
 </head>
 <body class="bg-[#F8F5F0]">
 
-  <!-- ══════════════ NAVBAR ══════════════ -->
+  <!-- NAVBAR -->
   <nav class="amazonia-navbar">
     <div class="max-w-screen-2xl mx-auto px-6 py-3 flex items-center justify-between">
-      <div class="flex items-center gap-4">
-        <a href="index.html" class="flex items-center gap-3 nav-logo">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 70 70" width="40" height="40">
-            <circle cx="35" cy="35" r="32" fill="rgba(255,255,255,0.15)"/>
-            <circle cx="35" cy="35" r="29" fill="none" stroke="rgba(116,198,157,0.5)" stroke-width="1"/>
-            <polygon points="35,8 58,55 12,55" fill="none" stroke="white" stroke-width="2.5" stroke-linejoin="round"/>
-            <line x1="21" y1="40" x2="49" y2="40" stroke="#D4A017" stroke-width="2.5" stroke-linecap="round"/>
-            <polygon points="35,4 42,18 28,18" fill="#74C69D"/>
-            <rect x="33" y="17" width="4" height="4" fill="#74C69D" rx="0.5"/>
-            <rect x="30" y="44" width="5" height="5" fill="#D4A017" rx="0.5" opacity="0.9"/>
-            <rect x="39" y="44" width="5" height="5" fill="#D4A017" rx="0.5" opacity="0.9"/>
-          </svg>
-          <div>
-            <div class="nav-brand-text" style="font-size:1.15rem;">AMAZONIA</div>
-            <div class="nav-brand-sub">Construcción</div>
-          </div>
-        </a>
-      </div>
-
+      <a href="index.html" class="flex items-center gap-3 nav-logo">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 70 70" width="40" height="40">
+          <circle cx="35" cy="35" r="32" fill="rgba(255,255,255,0.15)"/>
+          <polygon points="35,8 58,55 12,55" fill="none" stroke="white" stroke-width="2.5" stroke-linejoin="round"/>
+          <line x1="21" y1="40" x2="49" y2="40" stroke="#D4A017" stroke-width="2.5" stroke-linecap="round"/>
+          <polygon points="35,4 42,18 28,18" fill="#74C69D"/>
+          <rect x="30" y="44" width="5" height="5" fill="#D4A017" rx="0.5" opacity="0.9"/>
+          <rect x="39" y="44" width="5" height="5" fill="#D4A017" rx="0.5" opacity="0.9"/>
+        </svg>
+        <div>
+          <div class="nav-brand-text" style="font-size:1.1rem;">AMAZONIA</div>
+          <div class="nav-brand-sub">Construcción</div>
+        </div>
+      </a>
       <div class="flex items-center gap-3">
         <a href="index.html" class="text-white/70 hover:text-white text-sm transition-colors flex items-center gap-1.5">
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -47,25 +40,23 @@
           Inicio
         </a>
         <span class="text-white/20">|</span>
-        <span class="text-white/90 text-sm font-medium">Ficha Técnica</span>
+        <span class="text-white/90 text-sm font-medium">Cotización</span>
       </div>
     </div>
   </nav>
 
-  <!-- ══════════════ PAGE HEADER ══════════════ -->
+  <!-- PAGE HEADER -->
   <div class="page-header">
     <div class="max-w-screen-2xl mx-auto px-6">
       <div class="breadcrumb">
         <a href="index.html">Inicio</a>
         <span class="breadcrumb-separator">/</span>
-        <span class="text-white/80">Ficha Técnica de Proyecto</span>
+        <span class="text-white/80">Cotización</span>
       </div>
       <div class="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h1 class="text-xl font-bold text-white" style="font-family: Georgia, serif; letter-spacing: 0.5px;">
-            Ficha Técnica de Proyecto
-          </h1>
-          <p class="text-white/60 text-sm mt-1">Complete los campos y descargue el PDF profesional</p>
+          <h1 class="text-xl font-bold text-white" style="font-family: Georgia, serif;">Cotización de Obra</h1>
+          <p class="text-white/60 text-sm mt-1">Complete los campos y descargue el PDF</p>
         </div>
         <div class="flex items-center gap-2 text-xs text-white/50 bg-white/10 px-3 py-1.5 rounded-full border border-white/15">
           <span class="w-2 h-2 rounded-full bg-[#74C69D]"></span>
@@ -75,14 +66,14 @@
     </div>
   </div>
 
-  <!-- ══════════════ MAIN CONTENT ══════════════ -->
+  <!-- MAIN -->
   <div class="max-w-screen-2xl mx-auto px-4 md:px-6 py-8">
     <div class="grid grid-cols-1 xl:grid-cols-2 gap-8 items-start">
 
-      <!-- ═══════════ LEFT: FORM ═══════════ -->
+      <!-- FORM -->
       <div class="space-y-5 animate-slide-left">
 
-        <!-- Action Buttons (top) -->
+        <!-- Action Buttons -->
         <div class="flex flex-wrap gap-3 mb-2">
           <button id="btn-download" class="btn btn-gold btn-lg flex-1 sm:flex-none">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -95,7 +86,7 @@
               <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
               <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
             </svg>
-            Previsualizar PDF
+            Previsualizar
           </button>
           <button id="btn-reset" class="btn btn-danger-outline">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -107,179 +98,194 @@
 
         <form id="ficha-form" novalidate>
 
-          <!-- ── Section 1: Información General ── -->
+          <!-- Sección 1: Datos del Documento -->
           <div class="form-section">
             <div class="form-section-header">
               <div class="section-icon">
-                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="1.5" width="12" height="13" rx="1.5" stroke="white" stroke-width="1.5"/><line x1="4.5" y1="5.5" x2="11.5" y2="5.5" stroke="white" stroke-width="1.2" stroke-linecap="round"/><line x1="4.5" y1="8" x2="11.5" y2="8" stroke="white" stroke-width="1.2" stroke-linecap="round"/><line x1="4.5" y1="10.5" x2="8.5" y2="10.5" stroke="white" stroke-width="1.2" stroke-linecap="round"/></svg>
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="2" y="1.5" width="12" height="13" rx="1.5" stroke="white" stroke-width="1.5"/><line x1="4.5" y1="5.5" x2="11.5" y2="5.5" stroke="white" stroke-width="1.2" stroke-linecap="round"/><line x1="4.5" y1="8" x2="11.5" y2="8" stroke="white" stroke-width="1.2" stroke-linecap="round"/><line x1="4.5" y1="10.5" x2="8.5" y2="10.5" stroke="white" stroke-width="1.2" stroke-linecap="round"/></svg>
               </div>
-              Información General del Proyecto
+              Datos del Documento
             </div>
             <div class="p-5 space-y-4">
-
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div class="sm:col-span-2 form-group">
-                  <label class="form-label" for="nombre-proyecto">
-                    Nombre del Proyecto <span class="required-star">*</span>
-                  </label>
-                  <input type="text" id="nombre-proyecto" name="nombreProyecto"
-                    class="form-input" placeholder="Ej: Edificio Residencial Las Palmas"
-                    required autocomplete="off" />
-                  <div class="field-error" id="error-nombre" style="display:none;">
-                    ⚠ El nombre del proyecto es obligatorio.
-                  </div>
-                </div>
-
                 <div class="form-group">
-                  <label class="form-label" for="fecha">
-                    Fecha <span class="required-star">*</span>
-                  </label>
-                  <input type="date" id="fecha" name="fecha"
-                    class="form-input" required />
+                  <label class="form-label" for="fecha">Fecha <span class="required-star">*</span></label>
+                  <input type="date" id="fecha" name="fecha" class="form-input" required />
                 </div>
-
                 <div class="form-group">
-                  <label class="form-label" for="tipo-obra">Tipo de Obra</label>
-                  <select id="tipo-obra" name="tipoObra" class="form-select">
-                    <option value="">— Seleccionar —</option>
-                    <option value="Residencial">Residencial</option>
-                    <option value="Comercial">Comercial</option>
-                    <option value="Industrial">Industrial</option>
-                    <option value="Institucional">Institucional</option>
-                  </select>
-                </div>
-
-                <div class="sm:col-span-2 form-group">
-                  <label class="form-label" for="ubicacion">Ubicación / Dirección</label>
-                  <input type="text" id="ubicacion" name="ubicacion"
-                    class="form-input" placeholder="Ej: Calle 123 # 45-67, Bogotá, Colombia"
-                    autocomplete="off" />
-                </div>
-
-                <div class="form-group">
-                  <label class="form-label" for="arquitecto">Arquitecto / Director de Obra</label>
-                  <input type="text" id="arquitecto" name="arquitecto"
-                    class="form-input" placeholder="Nombre completo"
-                    autocomplete="off" />
-                </div>
-
-                <div class="form-group">
-                  <label class="form-label" for="num-documento">N° de Documento</label>
-                  <input type="text" id="num-documento" name="numDocumento"
-                    class="form-input" placeholder="Ej: FT-2025-001"
-                    autocomplete="off" />
+                  <label class="form-label" for="numero-cotizacion">Número de Cotización <span class="required-star">*</span></label>
+                  <input type="text" id="numero-cotizacion" name="numeroCotizacion"
+                    class="form-input" placeholder="Ej: AM- 2026/ 0013" required autocomplete="off" />
+                  <div class="field-error" id="error-numero" style="display:none;">⚠ El número de cotización es obligatorio.</div>
                 </div>
               </div>
-
-              <div class="form-group">
-                <label class="form-label" for="descripcion">Descripción del Proyecto</label>
-                <textarea id="descripcion" name="descripcion"
-                  class="form-textarea" rows="4"
-                  placeholder="Describa detalladamente el proyecto de construcción, sus características principales, objetivos y alcance..."></textarea>
-              </div>
-
             </div>
           </div>
 
-          <!-- ── Section 2: Datos Técnicos ── -->
+          <!-- Sección 2: Datos del Cliente -->
           <div class="form-section">
             <div class="form-section-header">
               <div class="section-icon">
-                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 14L14 2" stroke="white" stroke-width="1.5" stroke-linecap="round"/><path d="M2 14h3.5V10.5H9V7h3.5V3.5H14" stroke="white" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5" r="3" stroke="white" stroke-width="1.4"/><path d="M2 14c0-3.314 2.686-6 6-6s6 2.686 6 6" stroke="white" stroke-width="1.4" stroke-linecap="round"/></svg>
               </div>
-              Datos Técnicos y Presupuestales
+              Datos del Cliente
+            </div>
+            <div class="p-5 space-y-4">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="sm:col-span-2 form-group">
+                  <label class="form-label" for="apellido-nombre">Apellido y Nombre <span class="required-star">*</span></label>
+                  <input type="text" id="apellido-nombre" name="apellidoNombre"
+                    class="form-input" placeholder="Ej: García, Juan" required autocomplete="off" />
+                  <div class="field-error" id="error-nombre" style="display:none;">⚠ El nombre del cliente es obligatorio.</div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="nro-contacto">Nro. De contacto</label>
+                  <input type="text" id="nro-contacto" name="nroContacto"
+                    class="form-input" placeholder="Ej: 341 6214761" autocomplete="off" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="email">Email</label>
+                  <input type="email" id="email" name="email"
+                    class="form-input" placeholder="cliente@mail.com" autocomplete="off" />
+                </div>
+                <div class="sm:col-span-2 form-group">
+                  <label class="form-label" for="ubicacion">Ubicación del terreno de obra</label>
+                  <input type="text" id="ubicacion" name="ubicacion"
+                    class="form-input" placeholder="Ej: Barrio: Punta Chacra – Puerto Roldán" autocomplete="off" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sección 3: Propuesta de Proyecto -->
+          <div class="form-section">
+            <div class="form-section-header">
+              <div class="section-icon">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2 14L14 2" stroke="white" stroke-width="1.5" stroke-linecap="round"/><path d="M2 14h3.5V10.5H9V7h3.5V3.5H14" stroke="white" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              Propuesta de Proyecto
+            </div>
+            <div class="p-5 space-y-4">
+              <div class="form-group">
+                <label class="form-label" for="propuesta">Descripción de la propuesta</label>
+                <textarea id="propuesta" name="propuesta" class="form-textarea" rows="6"
+                  placeholder="Describa la propuesta elaborada para el cliente: tipo de vivienda, organización espacial, implantación, características destacadas del proyecto..."></textarea>
+                <p class="text-xs text-[#9CA3AF] mt-1">Este texto aparecerá en la sección "Propuesta de proyecto" del documento.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sección 4: Superficie y Precio -->
+          <div class="form-section">
+            <div class="form-section-header">
+              <div class="section-icon">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="1.5" y="1.5" width="13" height="13" rx="1" stroke="white" stroke-width="1.5"/><line x1="1.5" y1="7" x2="14.5" y2="7" stroke="white" stroke-width="1"/><line x1="8" y1="1.5" x2="8" y2="14.5" stroke="white" stroke-width="1"/></svg>
+              </div>
+              Superficie y Oferta Comercial
             </div>
             <div class="p-5">
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-
                 <div class="form-group">
-                  <label class="form-label" for="area-total">Área Total del Lote (m²)</label>
+                  <label class="form-label" for="superficie">Sup. cubierta / total obra (m²) <span class="required-star">*</span></label>
                   <div class="relative">
-                    <input type="number" id="area-total" name="areaTotal"
-                      class="form-input pr-12" placeholder="0.00"
-                      min="0" step="0.01" />
+                    <input type="number" id="superficie" name="superficie"
+                      class="form-input pr-12" placeholder="96" min="0" step="0.01" required />
+                    <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-[#6B7280] font-medium">m²</span>
+                  </div>
+                  <div class="field-error" id="error-superficie" style="display:none;">⚠ La superficie es obligatoria.</div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="superficie-terreno">Superficie total del terreno (m²)</label>
+                  <div class="relative">
+                    <input type="number" id="superficie-terreno" name="superficieTerreno"
+                      class="form-input pr-12" placeholder="200" min="0" step="0.01" />
                     <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-[#6B7280] font-medium">m²</span>
                   </div>
                 </div>
-
                 <div class="form-group">
-                  <label class="form-label" for="area-construida">Área Construida (m²)</label>
+                  <label class="form-label" for="precio-usd">Precio sin impuestos (USD) <span class="required-star">*</span></label>
                   <div class="relative">
-                    <input type="number" id="area-construida" name="areaConstruida"
-                      class="form-input pr-12" placeholder="0.00"
-                      min="0" step="0.01" />
-                    <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-[#6B7280] font-medium">m²</span>
+                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-[#6B7280] text-sm font-medium">USD</span>
+                    <input type="text" id="precio-usd" name="precioUsd"
+                      class="form-input pl-12" placeholder="105,600.00"
+                      autocomplete="off" inputmode="decimal" required />
+                  </div>
+                  <div class="field-error" id="error-precio" style="display:none;">⚠ El precio es obligatorio.</div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="valor-m2">Valor de referencia por m² (USD)</label>
+                  <div class="relative">
+                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-[#6B7280] text-sm font-medium">USD</span>
+                    <input type="text" id="valor-m2" name="valorM2"
+                      class="form-input pl-12" placeholder="1.100"
+                      autocomplete="off" inputmode="decimal" />
                   </div>
                 </div>
-
-                <div class="form-group">
-                  <label class="form-label" for="presupuesto">Presupuesto Total (COP)</label>
-                  <div class="relative">
-                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-[#6B7280] text-sm font-medium">$</span>
-                    <input type="text" id="presupuesto" name="presupuesto"
-                      class="form-input pl-7" placeholder="0"
-                      autocomplete="off" inputmode="numeric" />
-                  </div>
-                </div>
-
-                <div class="form-group">
-                  <label class="form-label" for="plazo">Plazo de Ejecución (días)</label>
-                  <div class="relative">
-                    <input type="number" id="plazo" name="plazo"
-                      class="form-input pr-14" placeholder="0"
-                      min="0" step="1" />
-                    <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-[#6B7280] font-medium">días</span>
-                  </div>
-                </div>
-
               </div>
             </div>
           </div>
 
-          <!-- ── Section 3: Especificaciones Técnicas ── -->
+          <!-- Sección 5: Consideraciones Técnicas -->
           <div class="form-section">
             <div class="form-section-header">
               <div class="section-icon">
-                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10.5 2.5a3 3 0 0 1 0 4.243L4.243 12.95a1 1 0 0 1-1.414 0L2.05 11.17a1 1 0 0 1 0-1.413L8.257 3.55A3 3 0 0 1 10.5 2.5z" stroke="white" stroke-width="1.4"/><line x1="8" y1="5" x2="11" y2="8" stroke="white" stroke-width="1.3" stroke-linecap="round"/></svg>
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2 4h12M2 8h10M2 12h7" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>
               </div>
-              Especificaciones Técnicas
-            </div>
-            <div class="p-5 space-y-4">
-
-              <div class="form-group">
-                <label class="form-label" for="especificaciones">Especificaciones Técnicas</label>
-                <textarea id="especificaciones" name="especificaciones"
-                  class="form-textarea" rows="5"
-                  placeholder="Detalle las especificaciones técnicas del proyecto:&#10;• Materiales a utilizar&#10;• Sistemas constructivos&#10;• Normas y estándares aplicables&#10;• Requisitos especiales..."></textarea>
-              </div>
-
-              <div class="form-group">
-                <label class="form-label" for="notas">Notas Adicionales</label>
-                <textarea id="notas" name="notas"
-                  class="form-textarea" rows="3"
-                  placeholder="Observaciones, condiciones especiales, requerimientos del cliente..."></textarea>
-              </div>
-
-            </div>
-          </div>
-
-          <!-- ── Section 4: Imágenes ── -->
-          <div class="form-section">
-            <div class="form-section-header">
-              <div class="section-icon">
-                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="1.5" y="1.5" width="13" height="13" rx="1.5" stroke="white" stroke-width="1.5"/><line x1="1.5" y1="5.5" x2="14.5" y2="5.5" stroke="white" stroke-width="1"/><line x1="6" y1="5.5" x2="6" y2="14.5" stroke="white" stroke-width="1"/><line x1="3.5" y1="8" x2="4.5" y2="8" stroke="white" stroke-width="1" stroke-linecap="round"/><line x1="8.5" y1="8" x2="13" y2="8" stroke="white" stroke-width="1" stroke-linecap="round"/><line x1="8.5" y1="10.5" x2="11" y2="10.5" stroke="white" stroke-width="1" stroke-linecap="round"/></svg>
-              </div>
-              Planos e Imágenes del Proyecto
+              Consideraciones Técnicas
             </div>
             <div class="p-5 space-y-5">
 
-              <!-- Plano 1 -->
               <div class="form-group">
-                <label class="form-label">Plano 1</label>
+                <label class="form-label" for="consideraciones-generales">Consideraciones Generales</label>
+                <textarea id="consideraciones-generales" name="consideracionesGenerales"
+                  class="form-textarea" rows="8"></textarea>
+                <p class="text-xs text-[#9CA3AF] mt-1">Aparece en la página 3, sección "Generales".</p>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="inclusiones">Inclusiones Particulares</label>
+                <textarea id="inclusiones" name="inclusiones"
+                  class="form-textarea" rows="14"></textarea>
+                <p class="text-xs text-[#9CA3AF] mt-1">Aparece en la página 3, sección "Inclusiones".</p>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Sección 6: Exclusiones -->
+          <div class="form-section">
+            <div class="form-section-header">
+              <div class="section-icon">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="white" stroke-width="1.5"/><line x1="5" y1="8" x2="11" y2="8" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>
+              </div>
+              Exclusiones
+            </div>
+            <div class="p-5">
+              <div class="form-group">
+                <label class="form-label" for="exclusiones">Texto de exclusiones</label>
+                <textarea id="exclusiones" name="exclusiones"
+                  class="form-textarea" rows="7"></textarea>
+                <p class="text-xs text-[#9CA3AF] mt-1">Aparece en la página 4 del documento.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sección 7: Imágenes -->
+          <div class="form-section">
+            <div class="form-section-header">
+              <div class="section-icon">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="1.5" y="1.5" width="13" height="13" rx="1.5" stroke="white" stroke-width="1.5"/><circle cx="5.5" cy="5.5" r="1.5" stroke="white" stroke-width="1.2"/><path d="M1.5 11l3.5-3.5 2.5 2.5 2-2 4.5 4.5" stroke="white" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              Planos e Imágenes
+            </div>
+            <div class="p-5 space-y-5">
+
+              <div class="form-group">
+                <label class="form-label">Imagen 1 — Planta / Render</label>
                 <div class="file-upload-area" id="upload-area-1">
                   <input type="file" id="plano1" name="plano1" accept="image/*" />
                   <span class="file-upload-icon">
-                    <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="2" width="24" height="24" rx="3" stroke="#40916C" stroke-width="1.5"/><line x1="2" y1="9" x2="26" y2="9" stroke="#40916C" stroke-width="1"/><line x1="10" y1="9" x2="10" y2="26" stroke="#40916C" stroke-width="1"/><circle cx="19" cy="17" r="3" stroke="#D4A017" stroke-width="1.5"/><line x1="4.5" y1="13" x2="8" y2="13" stroke="#40916C" stroke-width="1.2" stroke-linecap="round"/><line x1="4.5" y1="16" x2="8" y2="16" stroke="#40916C" stroke-width="1.2" stroke-linecap="round"/></svg>
+                    <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><rect x="2" y="2" width="24" height="24" rx="3" stroke="#40916C" stroke-width="1.5"/><line x1="2" y1="9" x2="26" y2="9" stroke="#40916C" stroke-width="1"/><line x1="10" y1="9" x2="10" y2="26" stroke="#40916C" stroke-width="1"/><circle cx="19" cy="17" r="3" stroke="#D4A017" stroke-width="1.5"/></svg>
                   </span>
                   <div class="file-upload-label">
                     <strong>Haga clic</strong> o arrastre una imagen<br/>
@@ -289,13 +295,12 @@
                 <div class="file-preview-container" id="preview-plano1"></div>
               </div>
 
-              <!-- Plano 2 -->
               <div class="form-group">
-                <label class="form-label">Plano 2</label>
+                <label class="form-label">Imagen 2 — Vista 3D / Perspectiva</label>
                 <div class="file-upload-area" id="upload-area-2">
                   <input type="file" id="plano2" name="plano2" accept="image/*" />
                   <span class="file-upload-icon">
-                    <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="2" width="24" height="24" rx="3" stroke="#40916C" stroke-width="1.5"/><line x1="2" y1="9" x2="26" y2="9" stroke="#40916C" stroke-width="1"/><line x1="10" y1="9" x2="10" y2="26" stroke="#40916C" stroke-width="1"/><circle cx="19" cy="17" r="3" stroke="#D4A017" stroke-width="1.5"/><line x1="4.5" y1="13" x2="8" y2="13" stroke="#40916C" stroke-width="1.2" stroke-linecap="round"/><line x1="4.5" y1="16" x2="8" y2="16" stroke="#40916C" stroke-width="1.2" stroke-linecap="round"/></svg>
+                    <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><rect x="2" y="2" width="24" height="24" rx="3" stroke="#40916C" stroke-width="1.5"/><line x1="2" y1="9" x2="26" y2="9" stroke="#40916C" stroke-width="1"/><line x1="10" y1="9" x2="10" y2="26" stroke="#40916C" stroke-width="1"/><circle cx="19" cy="17" r="3" stroke="#D4A017" stroke-width="1.5"/></svg>
                   </span>
                   <div class="file-upload-label">
                     <strong>Haga clic</strong> o arrastre una imagen<br/>
@@ -305,13 +310,12 @@
                 <div class="file-preview-container" id="preview-plano2"></div>
               </div>
 
-              <!-- Plano 3 -->
               <div class="form-group">
-                <label class="form-label">Plano 3</label>
+                <label class="form-label">Imagen 3 — Elevación / Fachada</label>
                 <div class="file-upload-area" id="upload-area-3">
                   <input type="file" id="plano3" name="plano3" accept="image/*" />
                   <span class="file-upload-icon">
-                    <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="2" width="24" height="24" rx="3" stroke="#40916C" stroke-width="1.5"/><line x1="2" y1="9" x2="26" y2="9" stroke="#40916C" stroke-width="1"/><line x1="10" y1="9" x2="10" y2="26" stroke="#40916C" stroke-width="1"/><circle cx="19" cy="17" r="3" stroke="#D4A017" stroke-width="1.5"/><line x1="4.5" y1="13" x2="8" y2="13" stroke="#40916C" stroke-width="1.2" stroke-linecap="round"/><line x1="4.5" y1="16" x2="8" y2="16" stroke="#40916C" stroke-width="1.2" stroke-linecap="round"/></svg>
+                    <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><rect x="2" y="2" width="24" height="24" rx="3" stroke="#40916C" stroke-width="1.5"/><line x1="2" y1="9" x2="26" y2="9" stroke="#40916C" stroke-width="1"/><line x1="10" y1="9" x2="10" y2="26" stroke="#40916C" stroke-width="1"/><circle cx="19" cy="17" r="3" stroke="#D4A017" stroke-width="1.5"/></svg>
                   </span>
                   <div class="file-upload-label">
                     <strong>Haga clic</strong> o arrastre una imagen<br/>
@@ -321,26 +325,10 @@
                 <div class="file-preview-container" id="preview-plano3"></div>
               </div>
 
-              <!-- Logo Cliente -->
-              <div class="form-group">
-                <label class="form-label">Logo del Cliente <span class="text-[#9CA3AF] font-normal text-xs">(opcional)</span></label>
-                <div class="file-upload-area" id="upload-area-logo">
-                  <input type="file" id="logo-cliente" name="logoCliente" accept="image/*" />
-                  <span class="file-upload-icon">
-                    <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="8" width="22" height="17" rx="2" stroke="#40916C" stroke-width="1.5"/><path d="M9 8V5h10v3" stroke="#40916C" stroke-width="1.5" stroke-linecap="round"/><rect x="11" y="15" width="6" height="10" rx="1" stroke="#D4A017" stroke-width="1.2"/><rect x="7" y="13" width="4" height="4" rx="0.5" stroke="#40916C" stroke-width="1"/><rect x="17" y="13" width="4" height="4" rx="0.5" stroke="#40916C" stroke-width="1"/></svg>
-                  </span>
-                  <div class="file-upload-label">
-                    <strong>Haga clic</strong> para subir el logo del cliente<br/>
-                    <span class="text-xs text-[#9CA3AF]">PNG, JPG, SVG hasta 5MB</span>
-                  </div>
-                </div>
-                <div class="file-preview-container" id="preview-logo-cliente"></div>
-              </div>
-
             </div>
           </div>
 
-          <!-- Bottom action buttons -->
+          <!-- Bottom buttons -->
           <div class="flex flex-wrap gap-3 pt-2">
             <button type="button" id="btn-download-bottom" class="btn btn-gold btn-lg flex-1">
               <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -356,7 +344,7 @@
         </form>
       </div>
 
-      <!-- ═══════════ RIGHT: PREVIEW ═══════════ -->
+      <!-- PREVIEW -->
       <div class="animate-slide-right">
         <div class="preview-panel" id="preview-panel">
           <div class="preview-panel-header">
@@ -364,27 +352,22 @@
               <span class="preview-dot"></span>
               Vista Previa del PDF
             </div>
-            <span class="text-white/50 text-xs font-normal normal-case" style="letter-spacing: 0;">
-              A4 · 794 × 1123 px
-            </span>
+            <span class="text-white/50 text-xs font-normal normal-case">A4 · 794 × 1123 px</span>
           </div>
           <div class="preview-scroll-container" id="preview-scroll">
             <div class="preview-wrapper">
               <div class="preview-scale" id="preview-scale-wrapper">
                 <div id="pdf-preview-container">
-                  <!-- Preview HTML injected here by JS -->
                   <div style="width:794px; min-height:1123px; background:white; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:20px; box-shadow: 0 4px 30px rgba(0,0,0,0.2);">
-                    <svg width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity:0.25;">
+                    <svg width="56" height="56" viewBox="0 0 56 56" fill="none" style="opacity:0.25;">
                       <rect x="10" y="4" width="36" height="48" rx="3" stroke="#1B4332" stroke-width="2.5"/>
                       <line x1="18" y1="18" x2="38" y2="18" stroke="#1B4332" stroke-width="2" stroke-linecap="round"/>
                       <line x1="18" y1="25" x2="38" y2="25" stroke="#1B4332" stroke-width="2" stroke-linecap="round"/>
                       <line x1="18" y1="32" x2="30" y2="32" stroke="#1B4332" stroke-width="2" stroke-linecap="round"/>
-                      <rect x="18" y="39" width="20" height="8" rx="1.5" stroke="#D4A017" stroke-width="1.8"/>
                     </svg>
-                    <p style="color:#9CA3AF; font-size:14px; font-family: Arial, sans-serif; text-align:center; max-width:280px; line-height:1.7; font-weight:400;">
-                      Complete los campos del formulario para ver la vista previa del PDF
+                    <p style="color:#9CA3AF; font-size:14px; font-family: Arial, sans-serif; text-align:center; max-width:280px; line-height:1.7;">
+                      Complete los campos del formulario para ver la vista previa
                     </p>
-                    <div style="width:48px; height:2px; background: linear-gradient(90deg, #1B4332, #40916C); border-radius:2px;"></div>
                   </div>
                 </div>
               </div>
@@ -396,10 +379,10 @@
     </div>
   </div>
 
-  <!-- ══════════════ TOAST CONTAINER ══════════════ -->
+  <!-- TOAST -->
   <div class="toast-container" id="toast-container"></div>
 
-  <!-- ══════════════ CONFIRM MODAL ══════════════ -->
+  <!-- MODAL -->
   <div class="modal-overlay" id="confirm-modal" style="display:none;">
     <div class="modal-box">
       <div class="text-center mb-6">
@@ -409,14 +392,10 @@
           </svg>
         </div>
         <h3 class="text-lg font-bold text-[#1A1A1A] mb-2">Limpiar Formulario</h3>
-        <p class="text-sm text-[#6B7280] leading-relaxed">
-          ¿Está seguro que desea limpiar todos los campos? Esta acción no se puede deshacer y se perderán todos los datos ingresados, incluyendo las imágenes cargadas.
-        </p>
+        <p class="text-sm text-[#6B7280] leading-relaxed">¿Está seguro que desea limpiar todos los campos? Esta acción no se puede deshacer.</p>
       </div>
       <div class="flex gap-3">
-        <button id="confirm-cancel" class="btn btn-outline flex-1">
-          Cancelar
-        </button>
+        <button id="confirm-cancel" class="btn btn-outline flex-1">Cancelar</button>
         <button id="confirm-accept" class="btn flex-1" style="background: linear-gradient(135deg,#DC2626,#B91C1C); color:white; box-shadow: 0 4px 12px rgba(220,38,38,0.3);">
           Sí, Limpiar Todo
         </button>
@@ -424,7 +403,6 @@
     </div>
   </div>
 
-  <!-- Scripts -->
   <script src="js/pdf-template.js"></script>
   <script src="js/app.js"></script>
 </body>

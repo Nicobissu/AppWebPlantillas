@@ -86,10 +86,9 @@ class FormManager {
 
     // Images object: keyed by field name, value = base64 dataURL
     this.images = {
-      plano1:      null,
-      plano2:      null,
-      plano3:      null,
-      logoCliente: null,
+      plano1: null,
+      plano2: null,
+      plano3: null,
     };
 
     // Debounce timer
@@ -115,25 +114,75 @@ class FormManager {
     this.form.addEventListener('input',  () => this._schedulePreviewUpdate());
     this.form.addEventListener('change', () => this._schedulePreviewUpdate());
 
-    // Presupuesto formatting (thousand separators while typing)
-    const presupuestoInput = document.getElementById('presupuesto');
-    if (presupuestoInput) {
-      presupuestoInput.addEventListener('input', (e) => {
-        this._formatPresupuestoInput(e.target);
-      });
-    }
+    // Textos predeterminados
+    this._setDefaults();
 
     // Image file inputs
-    this._initImageUpload('plano1',      'preview-plano1',      'upload-area-1');
-    this._initImageUpload('plano2',      'preview-plano2',      'upload-area-2');
-    this._initImageUpload('plano3',      'preview-plano3',      'upload-area-3');
-    this._initImageUpload('logo-cliente','preview-logo-cliente','upload-area-logo', true);
+    this._initImageUpload('plano1', 'preview-plano1', 'upload-area-1');
+    this._initImageUpload('plano2', 'preview-plano2', 'upload-area-2');
+    this._initImageUpload('plano3', 'preview-plano3', 'upload-area-3');
 
     // Buttons
     this._initButtons();
 
     // Initial preview render
     this._schedulePreviewUpdate(50);
+  }
+
+  // ── Default textarea values (solo si están vacíos) ───
+  _setDefaults() {
+    const map = [
+      ['consideraciones-generales', this._defaultGenerales()],
+      ['inclusiones',               this._defaultInclusiones()],
+      ['exclusiones',               this._defaultExclusiones()],
+    ];
+    map.forEach(([id, text]) => {
+      const el = document.getElementById(id);
+      if (el && !el.value) el.value = text;
+    });
+  }
+
+  // Igual que _setDefaults pero fuerza el valor (para reset)
+  _restoreDefaults() {
+    const el = (id) => document.getElementById(id);
+    [
+      ['consideraciones-generales', this._defaultGenerales()],
+      ['inclusiones',               this._defaultInclusiones()],
+      ['exclusiones',               this._defaultExclusiones()],
+    ].forEach(([id, text]) => { if (el(id)) el(id).value = text; });
+  }
+
+  _defaultGenerales() {
+    return `- Se incluyen las herramientas, materiales y equipos necesarios para el desarrollo de todas las tareas.
+- Se incluyen todos los seguros de ART y Vida del personal y los seguros de Accidentes Personales de los profesionales.
+- Esta cotización es indivisible en todos y cada uno de sus ítems. Solo se cotizan los ítems especificados en la presente oferta. De modificarse uno o más ítems, la Empresa se reserva el derecho de rever sus precios unitarios. Además, cualquier trabajo adicional o modificación solicitada por el cliente deberá presupuestarse y aprobarse por escrito antes de su ejecución.
+- El presupuesto incluye la construcción conforme a los planos y especificaciones técnicas provistas. Cualquier ajuste en diseño respecto al proyecto cotizado podrá generar costos adicionales y afectar los plazos de entrega.
+- Los plazos indicados en este presupuesto pueden verse afectados por eventos fuera de nuestro control. La empresa se reserva el derecho de ajustar plazo de obra como consecuencia.
+- La obtención de permisos municipales, estudios de suelo, aprobaciones y otras gestiones administrativas son responsabilidad del cliente, salvo que se indique explícitamente lo contrario en el presupuesto.`;
+  }
+
+  _defaultInclusiones() {
+    return `- Mov. de suelo:\t\tRetiro de suelo vegetal, relleno y compactación.
+- Estructura:\t\tPlatea, columnas, encadenados y vigas de hormigón armado.
+- Muros:\t\t\tMuros de Hormigón Sistema Constructivo AMZ.
+- Tabiques interiores:\tTabique de durlock con aislación.
+- Techo:\t\t\tCubierta liviana con perfilería metálica, aislación y chapa color.
+- Cielorraso:\t\tCielorraso junta tomada con placas de yeso estándar pintado con latex color blanco.
+- Inst. eléctrica:\t\tInstalación monofásica y cableado completo según instalación del proyecto. Tablero ppal. con térmicas y disyuntor. Pilar de luz y kit de conexión reglamentario.
+- Inst. sanitaria:\t\tInst agua fría y caliente. Griferías FV en cocina, baño y lavadero. Losa sanitaria Roca. Bacha de acero inoxidable en cocina y lavadero. Vanitoir. Instalación cloacal y pluvial.
+- Inst. gas:\t\t\tInstalación gas natural con aprobación de Litoral Gas.
+- Pre-instalación Aires Acondicionados
+- Revestimientos:\t\tCerámico en paredes de cocina sobre mesada y en baños. Muros interiores en color blanco. Muros exteriores terminación material de frente.
+- Pisos:\t\t\tPisos interiores porcelanato con zócalo incluido. Pisos exteriores: cerámico apto exterior.
+- Aberturas:\t\tPuerta de ingreso: doble chapa inyectada galvanizada y pintada. Puertas interiores: puerta placa. Ventanas: Aluminio línea moderna, doble vidrio hermético DVH.
+- Mobiliario:\t\tAmoblamiento de cocina color blanco bajo mesada y alacena con mesada de granito. Placard color blanco en dormitorio.
+- Galería exterior:\t\tNo cotizada`;
+  }
+
+  _defaultExclusiones() {
+    return `No se incluyen aportes a cajas y/o colegios profesionales y tasa de revisión de planos municipalidad interviniente. No se consideran en esta cotización cualquier otro tipo de tasas y/o sellados de ningún ente oficial (municipalidad, provincia, nación, etc.) adicionales.
+
+No incluye este presupuesto lo no contemplado en el mismo y todo tipo de instalación y provisión de bomba, cableado de datos y corrientes débiles en instalación eléctrica, artefactos de iluminación y su colocación, artefactos de gas ni su instalación. Solías ni umbrales de granito. Anafe, cocina, campana de extracción de cocina, calefón/termotanque, lavarropas, ni ningún otro electrodomestico. Provisión ni colocación de cerco definitivo. Parquización, piscina, veredas ni accesos vehiculares.`;
   }
 
   // ── Button wiring ────────────────────────────
@@ -195,8 +244,7 @@ class FormManager {
 
     if (!input || !previewDiv) return;
 
-    // Map input id to images key
-    const imageKey = inputId === 'logo-cliente' ? 'logoCliente' : inputId;
+    const imageKey = inputId;
 
     input.addEventListener('change', (e) => {
       const file = e.target.files && e.target.files[0];
@@ -276,7 +324,7 @@ class FormManager {
       this.images[imageKey] = null;
       previewDiv.innerHTML = '';
       // Reset file input
-      const inputId = imageKey === 'logoCliente' ? 'logo-cliente' : imageKey;
+      const inputId = imageKey;
       const input = document.getElementById(inputId);
       if (input) input.value = '';
       this._schedulePreviewUpdate(100);
@@ -292,42 +340,21 @@ class FormManager {
     };
 
     return {
-      nombreProyecto:  val('nombre-proyecto'),
-      fecha:           val('fecha'),
-      ubicacion:       val('ubicacion'),
-      tipoObra:        val('tipo-obra'),
-      descripcion:     val('descripcion'),
-      areaTotal:       val('area-total'),
-      areaConstruida:  val('area-construida'),
-      presupuesto:     this._getRawPresupuesto(),
-      plazo:           val('plazo'),
-      arquitecto:      val('arquitecto'),
-      especificaciones:val('especificaciones'),
-      notas:           val('notas'),
-      numDocumento:    val('num-documento'),
+      fecha:                    val('fecha'),
+      numeroCotizacion:         val('numero-cotizacion'),
+      apellidoNombre:           val('apellido-nombre'),
+      nroContacto:              val('nro-contacto'),
+      email:                    val('email'),
+      ubicacion:                val('ubicacion'),
+      propuesta:                val('propuesta'),
+      superficie:               val('superficie'),
+      superficieTerreno:        val('superficie-terreno'),
+      precioUsd:                val('precio-usd'),
+      valorM2:                  val('valor-m2'),
+      consideracionesGenerales: val('consideraciones-generales'),
+      inclusiones:              val('inclusiones'),
+      exclusiones:              val('exclusiones'),
     };
-  }
-
-  // ── Get raw presupuesto number ────────────────
-  _getRawPresupuesto() {
-    const el = document.getElementById('presupuesto');
-    if (!el || !el.value) return '';
-    // Remove dots (thousand separators in Colombian format)
-    return el.value.replace(/\./g, '').replace(/[^0-9,]/g, '');
-  }
-
-  // ── Format presupuesto input in real-time ─────
-  _formatPresupuestoInput(input) {
-    // Get only digits
-    let raw = input.value.replace(/\D/g, '');
-    if (!raw) { input.value = ''; return; }
-
-    // Limit to reasonable amount
-    if (raw.length > 15) raw = raw.slice(0, 15);
-
-    // Format with dots as thousands separator (Colombian style)
-    const num = parseInt(raw, 10);
-    input.value = num.toLocaleString('es-CO');
   }
 
   // ── Schedule debounced preview update ─────────
@@ -406,26 +433,24 @@ class FormManager {
   _validate() {
     let valid = true;
 
-    // Nombre del proyecto
-    const nombreInput = document.getElementById('nombre-proyecto');
-    const errorNombre = document.getElementById('error-nombre');
-    if (nombreInput && !nombreInput.value.trim()) {
-      nombreInput.classList.add('error');
-      if (errorNombre) errorNombre.style.display = 'flex';
-      valid = false;
-    } else if (nombreInput) {
-      nombreInput.classList.remove('error');
-      if (errorNombre) errorNombre.style.display = 'none';
-    }
+    const check = (inputId, errorId) => {
+      const input = document.getElementById(inputId);
+      const err   = errorId ? document.getElementById(errorId) : null;
+      if (input && !input.value.trim()) {
+        input.classList.add('error');
+        if (err) err.style.display = 'flex';
+        valid = false;
+      } else if (input) {
+        input.classList.remove('error');
+        if (err) err.style.display = 'none';
+      }
+    };
 
-    // Fecha
-    const fechaInput = document.getElementById('fecha');
-    if (fechaInput && !fechaInput.value) {
-      fechaInput.classList.add('error');
-      valid = false;
-    } else if (fechaInput) {
-      fechaInput.classList.remove('error');
-    }
+    check('fecha', null);
+    check('numero-cotizacion', 'error-numero');
+    check('apellido-nombre', 'error-nombre');
+    check('superficie', 'error-superficie');
+    check('precio-usd', 'error-precio');
 
     return valid;
   }
@@ -527,16 +552,18 @@ class FormManager {
       fechaInput.value = new Date().toISOString().slice(0, 10);
     }
 
+    // Restore textarea defaults after form.reset() clears them
+    this._restoreDefaults();
+
     // Clear all images
     this.images = {
-      plano1:      null,
-      plano2:      null,
-      plano3:      null,
-      logoCliente: null,
+      plano1: null,
+      plano2: null,
+      plano3: null,
     };
 
     // Clear image preview containers
-    ['preview-plano1', 'preview-plano2', 'preview-plano3', 'preview-logo-cliente']
+    ['preview-plano1', 'preview-plano2', 'preview-plano3']
       .forEach(id => {
         const el = document.getElementById(id);
         if (el) el.innerHTML = '';
@@ -545,10 +572,6 @@ class FormManager {
     // Clear validation errors
     this.form.querySelectorAll('.error').forEach(el => el.classList.remove('error'));
     document.querySelectorAll('.field-error').forEach(el => el.style.display = 'none');
-
-    // Reset presupuesto display
-    const presupuesto = document.getElementById('presupuesto');
-    if (presupuesto) presupuesto.value = '';
 
     // Reset preview to placeholder
     if (this.previewContainer) {

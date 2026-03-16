@@ -1,687 +1,526 @@
 /**
- * pdf-template.js
- * Amazonia Construcción — Ficha Técnica PDF Template
- * Estilo: minimalista, sobrio, líneas finas, fondo blanco
- *
- * buildPDFPreview(data, images) → HTML string A4
- * generateAndDownloadPDF(data, images) → descarga PDF
+ * pdf-template.js — Amazonia SAS — Cotización
  */
 
-// ─────────────────────────────────────────────
-//  Logo Amazonia (versión horizontal minimalista)
-// ─────────────────────────────────────────────
-const AMAZONIA_LOGO_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 28" width="144" height="22">
-  <polygon points="14,3 24,22 4,22" fill="none" stroke="#1B4332" stroke-width="1.6" stroke-linejoin="round"/>
-  <line x1="8" y1="16" x2="20" y2="16" stroke="#1B4332" stroke-width="1.2" stroke-linecap="round"/>
-  <polygon points="14,1 17.5,8 10.5,8" fill="#1B4332"/>
-  <rect x="12.5" y="7.5" width="3" height="3" fill="#1B4332" rx="0.3"/>
-  <rect x="10" y="17.5" width="3" height="3" fill="#D4A017" rx="0.3"/>
-  <rect x="15" y="17.5" width="3" height="3" fill="#D4A017" rx="0.3"/>
-  <text x="30" y="17" font-family="Georgia,'Times New Roman',serif" font-size="14" font-weight="700" letter-spacing="3" fill="#1B4332">AMAZONIA</text>
-  <line x1="30" y1="21" x2="178" y2="21" stroke="#D4A017" stroke-width="0.8"/>
-  <text x="30" y="27" font-family="Arial,Helvetica,sans-serif" font-size="6.5" font-weight="400" letter-spacing="4" fill="#40916C">ARQUITECTURA · DISEÑO · PROYECTO</text>
-</svg>`;
-
-// ─────────────────────────────────────────────
-//  Helpers
-// ─────────────────────────────────────────────
-function formatCOP(value) {
-  if (!value && value !== 0) return '—';
-  const num = typeof value === 'string'
-    ? parseFloat(value.replace(/\./g, '').replace(',', '.'))
-    : Number(value);
-  if (isNaN(num)) return '—';
-  return '$ ' + num.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) + ' COP';
+// ─── Helpers ───────────────────────────────────
+function escHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
 
-function formatDate(dateStr) {
+function fmtFecha(dateStr) {
   if (!dateStr) return '—';
   try {
-    const [y, m] = dateStr.split('-');
-    const months = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
-    return `${months[parseInt(m)-1]} ${y}`;
+    const p = dateStr.split('-');
+    return `${parseInt(p[2])}/${parseInt(p[1])}/${p[0]}`;
   } catch { return dateStr; }
 }
 
-function formatNum(val, unit = '') {
-  if (!val && val !== 0) return '—';
-  const n = parseFloat(val);
-  if (isNaN(n)) return '—';
-  const fmt = n.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
-  return unit ? `${fmt} ${unit}` : fmt;
+function fmtUSD(val) {
+  if (!val) return '—';
+  const n = parseFloat(String(val).replace(/[^0-9.,]/g,'').replace(',','.'));
+  if (isNaN(n)) return String(val);
+  return n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-function getDocNumber(data) {
-  if (data.numDocumento && data.numDocumento.trim()) return data.numDocumento.trim();
-  const now = new Date();
-  return String(now.getFullYear()).slice(2) + String(now.getMonth()+1).padStart(2,'0');
+function numToWords(val) {
+  if (!val) return '';
+  const n = Math.round(parseFloat(String(val).replace(/[^0-9.,]/g,'').replace(',','.')));
+  if (isNaN(n) || n === 0) return '';
+  const ones = ['','UN','DOS','TRES','CUATRO','CINCO','SEIS','SIETE','OCHO','NUEVE',
+    'DIEZ','ONCE','DOCE','TRECE','CATORCE','QUINCE','DIECISÉIS','DIECISIETE','DIECIOCHO','DIECINUEVE'];
+  const tens = ['','','VEINTE','TREINTA','CUARENTA','CINCUENTA','SESENTA','SETENTA','OCHENTA','NOVENTA'];
+  const hunds = ['','CIENTO','DOSCIENTOS','TRESCIENTOS','CUATROCIENTOS','QUINIENTOS',
+    'SEISCIENTOS','SETECIENTOS','OCHOCIENTOS','NOVECIENTOS'];
+  const small = x => { if(!x)return''; if(x<20)return ones[x]; const t=Math.floor(x/10),u=x%10; return tens[t]+(u?' Y '+ones[u]:''); };
+  const triple = x => { const h=Math.floor(x/100),r=x%100; return (h?hunds[h]+(r?' ':' '):'')+(r?small(r):''); };
+  if (n>=1000000){ const m=Math.floor(n/1000000),r=n%1000000; return (m===1?'UN MILLÓN':triple(m)+' MILLONES')+(r?' '+numToWords(r):''); }
+  if (n>=1000){ const m=Math.floor(n/1000),r=n%1000; return (m===1?'MIL':triple(m)+' MIL')+(r?' '+triple(r):''); }
+  return triple(n).trim();
 }
 
-function escapeHtml(str) {
-  if (!str) return '';
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
-
-// ─────────────────────────────────────────────
-//  Fila de dato
-// ─────────────────────────────────────────────
-function dataField(label, value) {
-  return `
-    <div style="border-bottom:1px solid #EBEBEB;padding:5px 0;">
-      <div style="font-size:7px;font-family:Arial,sans-serif;color:#9CA3AF;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:2px;">${label}</div>
-      <div style="font-size:10px;font-family:Arial,sans-serif;color:#1A1A1A;font-weight:500;">${value || '—'}</div>
-    </div>`;
-}
-
-// ─────────────────────────────────────────────
-//  Plano card
-// ─────────────────────────────────────────────
-function planCard(src, label, height) {
-  return `
-    <div style="border:1px solid #DCDCDC;overflow:hidden;background:#FAFAFA;">
-      <div style="background:#F4F4F2;padding:5px 12px;border-bottom:1px solid #DCDCDC;display:flex;align-items:center;justify-content:space-between;">
-        <span style="font-size:8px;font-family:Arial,sans-serif;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#1B4332;">${label}</span>
-        <div style="width:5px;height:5px;border-radius:50%;background:#D4A017;"></div>
-      </div>
-      <div style="display:flex;align-items:center;justify-content:center;height:${height};background:white;">
-        <img src="${src}" alt="${label}"
-          style="max-width:100%;max-height:100%;object-fit:contain;display:block;padding:8px;"
-          crossorigin="anonymous"/>
-      </div>
-      <div style="background:#F4F4F2;padding:3px 12px;border-top:1px solid #DCDCDC;">
-        <span style="font-size:7px;font-family:Arial,sans-serif;color:#9CA3AF;letter-spacing:1px;">ESCALA — SIN ESCALA · AMAZONIA CONSTRUCCIÓN</span>
-      </div>
-    </div>`;
-}
-
-// ─────────────────────────────────────────────
-//  Planos layout adaptativo
-// ─────────────────────────────────────────────
-function renderPlanosSection(images) {
-  const planos = [
-    { src: images.plano1, label: 'Plano 01' },
-    { src: images.plano2, label: 'Plano 02' },
-    { src: images.plano3, label: 'Plano 03' },
-  ].filter(p => p.src);
-
-  if (planos.length === 0) return '';
-
-  if (planos.length === 1) {
-    return `<div data-pb style="margin-top:18px;">${planCard(planos[0].src, planos[0].label, '400px')}</div>`;
-  }
-
-  if (planos.length === 2) {
-    return `
-      <div data-pb style="margin-top:18px;display:flex;gap:10px;">
-        <div style="flex:1;">${planCard(planos[0].src, planos[0].label, '340px')}</div>
-        <div style="flex:1;">${planCard(planos[1].src, planos[1].label, '340px')}</div>
+// Renderiza texto libre de inclusiones: líneas "- Label: valor" → columnas bold/normal
+function renderListText(rawText) {
+  if (!rawText) return '';
+  const lines = rawText.split('\n');
+  return lines.map(line => {
+    const t = line.trim();
+    if (!t) return '<div style="height:4px;"></div>';
+    // Detectar patrón "- Algo: descripción"
+    const m = t.match(/^(-\s*)(([^:]{1,35}):\s*)(.*)$/);
+    if (m) {
+      return `<div style="display:flex;gap:0;margin-bottom:2px;align-items:flex-start;">
+        <span style="font-weight:700;min-width:130px;max-width:130px;flex-shrink:0;font-size:8.5px;font-family:Arial;color:#1A1A1A;line-height:1.55;">- ${escHtml(m[3])}:</span>
+        <span style="font-size:8.5px;font-family:Arial;color:#1A1A1A;line-height:1.55;flex:1;">${escHtml(m[4])}</span>
       </div>`;
-  }
+    }
+    return `<div style="font-size:8.5px;font-family:Arial;color:#1A1A1A;line-height:1.55;margin-bottom:2px;">${escHtml(t)}</div>`;
+  }).join('');
+}
 
+// Renderiza texto libre simple (consideraciones generales, exclusiones)
+function renderFreeText(rawText) {
+  if (!rawText) return '';
+  return rawText.split('\n').map(line => {
+    if (!line.trim()) return '<div style="height:4px;"></div>';
+    return `<p style="font-size:8.8px;font-family:Arial;color:#1A1A1A;line-height:1.6;margin-bottom:3px;">${escHtml(line.trim())}</p>`;
+  }).join('');
+}
+
+// ─── CSS base ──────────────────────────────────
+const BASE_STYLES = `
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:Arial,Helvetica,sans-serif;background:#fff;}
+
+.pdf-page{
+  width:794px;
+  min-height:1123px;
+  background:#FFFFFF;
+  display:flex;
+  flex-direction:column;
+}
+
+/* ── HEADER ── */
+.hdr{
+  position:relative;width:794px;height:74px;
+  background:white;overflow:hidden;flex-shrink:0;
+  border-bottom:1.5px solid #C8D4E4;
+}
+.hdr-logo{
+  position:absolute;left:24px;top:0;bottom:0;
+  display:flex;flex-direction:column;justify-content:center;
+  z-index:2;
+}
+.amz-name{
+  font-family:Georgia,'Times New Roman',serif;
+  font-size:23px;font-weight:700;
+  color:#1C3A5C;letter-spacing:2.5px;line-height:1;
+}
+.amz-rule{
+  width:220px;height:1px;
+  background:linear-gradient(to right,#8AAEC4 70%,transparent);
+  margin:5px 0 4px 0;
+}
+.amz-sub{
+  font-family:Arial,sans-serif;font-size:6.8px;
+  color:#8AAEC4;letter-spacing:5px;text-transform:uppercase;
+}
+.hdr-cot{
+  position:absolute;right:14px;top:50%;transform:translateY(-50%);
+  font-family:Arial,sans-serif;font-size:17px;font-weight:700;
+  color:white;letter-spacing:1px;z-index:3;
+}
+
+/* ── BLOQUE CLIENTE ── */
+.client-wrap{padding:8px 24px 10px 24px;flex-shrink:0;}
+.fecha-line{
+  text-align:right;font-family:Arial,sans-serif;
+  font-size:8.5px;color:#555;margin-bottom:5px;line-height:1.9;
+}
+.fecha-line strong{color:#1A1A1A;margin-left:5px;}
+.ct{width:100%;border-collapse:collapse;}
+.ct .th-row td{
+  background:#1C3A5C;color:white;
+  font-size:8.5px;font-family:Arial;font-weight:700;
+  padding:4px 10px;
+}
+.ct td{
+  font-size:8.5px;font-family:Arial;
+  padding:3.5px 10px;color:#1A1A1A;
+  border:0.5px solid #D0D8E8;
+  vertical-align:middle;
+}
+.ct .cl{font-weight:700;color:#1C3A5C;background:#F4F6FA;width:170px;}
+
+/* ── CUERPO ── */
+.body{flex:1;padding:12px 24px 8px 24px;display:flex;flex-direction:column;}
+
+/* Título de sección */
+.st{
+  font-family:Arial,sans-serif;font-size:9.5px;font-weight:700;
+  color:#1C3A5C;text-decoration:underline;
+  margin:13px 0 6px 0;
+  padding-left:9px;
+  border-left:2.5px solid #1C3A5C;
+  line-height:1.2;
+}
+.st-sub{
+  font-family:Arial,sans-serif;font-size:9px;font-weight:700;
+  color:#1A1A1A;margin:8px 0 4px 0;
+  padding-left:9px;
+  border-left:1.5px solid #8AAEC4;
+}
+
+/* Texto cuerpo */
+.bp{font-family:Arial;font-size:9px;color:#1A1A1A;line-height:1.62;margin-bottom:4px;}
+.bp-b{font-family:Arial;font-size:9px;font-weight:700;color:#1A1A1A;line-height:1.62;margin-bottom:4px;}
+.bp-i{font-family:Arial;font-size:8.5px;font-style:italic;color:#444;line-height:1.6;margin-bottom:4px;}
+.bp-sm{font-family:Arial;font-size:8px;color:#555;line-height:1.6;margin-bottom:3px;}
+.bullet{font-family:Arial;font-size:9px;color:#1A1A1A;line-height:1.6;margin-bottom:2px;padding-left:12px;}
+
+/* ── PRECIO ── */
+.precio-box{
+  border:1px solid #1C3A5C;padding:10px 16px;
+  margin:8px 0;background:#F2F5FA;
+}
+.precio-titulo{font-family:Arial;font-size:9px;font-weight:700;color:#1C3A5C;text-decoration:underline;margin-bottom:5px;}
+.precio-row{display:flex;align-items:baseline;gap:16px;}
+.precio-cur{font-family:Arial;font-size:9.5px;font-weight:700;color:#1C3A5C;width:38px;}
+.precio-amt{font-family:Georgia,serif;font-size:16px;font-weight:700;color:#1A1A1A;letter-spacing:0.5px;}
+.precio-words{font-family:Arial;font-size:7.8px;font-weight:700;color:#444;text-transform:uppercase;margin-top:4px;border-top:1px solid #D0D8E8;padding-top:4px;}
+
+/* ── SUPERFICIE INFO ── */
+.sup-grid{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:6px;margin:8px 0;
+}
+.sup-cell{
+  background:#F7F9FB;border:0.5px solid #D0D8E8;
+  padding:5px 10px;
+}
+.sup-lbl{font-family:Arial;font-size:7px;color:#8AAEC4;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:2px;}
+.sup-val{font-family:Georgia,serif;font-size:13px;font-weight:700;color:#1C3A5C;line-height:1;}
+.sup-unit{font-family:Arial;font-size:7.5px;color:#8AAEC4;margin-top:1px;}
+
+/* ── FOOTER ── */
+.ftr{
+  background:#1C3A5C;
+  display:grid;grid-template-columns:1fr 1fr 1fr auto;
+  padding:8px 16px;gap:0;flex-shrink:0;
+}
+.fc{font-family:Arial;font-size:6.8px;color:rgba(255,255,255,0.82);line-height:1.7;}
+.fc .ft{font-weight:700;color:white;display:block;margin-bottom:1px;font-size:7px;}
+.ftr-end{display:flex;align-items:center;gap:8px;justify-content:flex-end;}
+.ftr-circle{
+  width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,0.12);
+  border:1px solid rgba(255,255,255,0.25);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.ftr-pg{font-family:Arial;font-size:9px;color:rgba(255,255,255,0.55);align-self:flex-end;padding-bottom:1px;}
+
+[data-pb]{break-inside:avoid;page-break-inside:avoid;}
+`;
+
+// ─── Header ──────────────────────────────────
+function renderHeader() {
   return `
-    <div data-pb style="margin-top:18px;">
-      ${planCard(planos[0].src, planos[0].label, '310px')}
+  <div class="hdr">
+    <svg style="position:absolute;top:0;right:0;" width="310" height="74"
+         viewBox="0 0 310 74" xmlns="http://www.w3.org/2000/svg">
+      <polygon points="80,0 310,0 310,74 230,74" fill="#D4B896" opacity="0.45"/>
+      <polygon points="195,0 310,0 310,74 285,74" fill="#7A9EC0" opacity="0.6"/>
+      <polygon points="248,0 310,0 310,56" fill="#1C3A5C"/>
+      <polygon points="276,74 310,74 310,58" fill="#2B5280" opacity="0.5"/>
+    </svg>
+    <div class="hdr-logo">
+      <div class="amz-name">AMAZONÍA</div>
+      <div class="amz-rule"></div>
+      <div class="amz-sub">Construcción Industrializada</div>
     </div>
-    <div data-pb style="margin-top:10px;display:flex;gap:10px;">
-      <div style="flex:1;">${planCard(planos[1].src, planos[1].label, '250px')}</div>
-      <div style="flex:1;">${planCard(planos[2].src, planos[2].label, '250px')}</div>
-    </div>`;
+    <div class="hdr-cot">Cotización</div>
+  </div>`;
 }
 
-// ─────────────────────────────────────────────
-//  Footer canvas — siempre en el fondo absoluto
-// ─────────────────────────────────────────────
-function drawCanvasFooter(ctx, canvasWidth, canvasHeight, pageNum, docNum, S = 3) {
-  const fH  = 44 * S;
-  // Siempre pegado al borde inferior absoluto del canvas
-  const y   = canvasHeight - fH;
-  const pad = 28 * S;
-
-  // Fondo
-  ctx.fillStyle = '#FAFAF8';
-  ctx.fillRect(0, y, canvasWidth, fH);
-
-  // Línea superior del footer
-  ctx.strokeStyle = '#E0E0E0';
-  ctx.lineWidth = S;
-  ctx.beginPath();
-  ctx.moveTo(0, y);
-  ctx.lineTo(canvasWidth, y);
-  ctx.stroke();
-
-  // Izquierda — marca
-  ctx.fillStyle = '#1B4332';
-  ctx.font = `bold ${13 * S}px Georgia`;
-  ctx.textAlign = 'left';
-  ctx.fillText('AMAZONIA', pad, y + 20 * S);
-  ctx.fillStyle = '#9CA3AF';
-  ctx.font = `${8 * S}px Arial`;
-  ctx.fillText('Arquitectura · Construcción', pad, y + 32 * S);
-
-  // Centro — contacto
-  ctx.textAlign = 'center';
-  ctx.fillStyle = '#9CA3AF';
-  ctx.font = `${8 * S}px Arial`;
-  ctx.fillText('contacto@amazonia.com.co  ·  www.amazonia.com.co', canvasWidth / 2, y + 20 * S);
-  ctx.fillText('Colombia  ·  Construyendo el futuro con naturaleza', canvasWidth / 2, y + 32 * S);
-
-  // Derecha — página
-  ctx.textAlign = 'right';
-  ctx.fillStyle = '#9CA3AF';
-  ctx.font = `${8 * S}px Arial`;
-  ctx.fillText(`Página ${pageNum}`, canvasWidth - pad, y + 20 * S);
-  ctx.fillText(`Ref: ${docNum}`, canvasWidth - pad, y + 32 * S);
+// ─── Footer ──────────────────────────────────
+function renderFooter(n) {
+  return `
+  <div class="ftr">
+    <div class="fc"><span class="ft">Seguinos en nuestras redes:</span>/amazonia_amz<br/>www.amazoníaamz.com</div>
+    <div class="fc"><span class="ft">Contáctanos:</span>comercial@amazoniaamz.com<br/>341-521-7974</div>
+    <div class="fc"><span class="ft">&nbsp;</span>Av. San Lorenzo 2669,<br/>C. Bermúdez · Santa Fe, Arg.</div>
+    <div class="ftr-end">
+      <div class="ftr-circle">
+        <svg viewBox="0 0 34 34" width="24" height="24" xmlns="http://www.w3.org/2000/svg">
+          <line x1="5" y1="9"  x2="29" y2="9"  stroke="white" stroke-width="2.8" stroke-linecap="round"/>
+          <line x1="5" y1="17" x2="29" y2="17" stroke="white" stroke-width="2.8" stroke-linecap="round"/>
+          <line x1="5" y1="25" x2="29" y2="25" stroke="white" stroke-width="2.8" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <span class="ftr-pg">${n}</span>
+    </div>
+  </div>`;
 }
 
-// ─────────────────────────────────────────────
-//  MAIN: buildPDFPreview
-// ─────────────────────────────────────────────
+// ─── Bloque cliente ───────────────────────────
+function renderClientBlock(data) {
+  return `
+  <div class="client-wrap" data-pb>
+    <div class="fecha-line">
+      Fecha:<strong>${fmtFecha(data.fecha)}</strong>
+      &nbsp;&nbsp;&nbsp;
+      Número:<strong>${escHtml(data.numeroCotizacion) || '—'}</strong>
+    </div>
+    <table class="ct">
+      <tr class="th-row"><td colspan="2">Cliente:</td></tr>
+      <tr><td class="cl">Apellido y Nombre:</td><td>${escHtml(data.apellidoNombre) || ''}</td></tr>
+      <tr><td class="cl">Nro. De contacto:</td><td>${escHtml(data.nroContacto) || ''}</td></tr>
+      <tr><td class="cl">Email:</td><td>${escHtml(data.email) || ''}</td></tr>
+      <tr><td class="cl">Ubicación del terreno de obra:</td><td>${escHtml(data.ubicacion) || ''}</td></tr>
+    </table>
+  </div>`;
+}
+
+// ─── PÁGINA 1 ─────────────────────────────────
+function buildPage1(data) {
+  const propuesta = data.propuesta && data.propuesta.trim()
+    ? escHtml(data.propuesta)
+    : 'La presente propuesta se elaboró a partir de los lineamientos funcionales compartidos por el cliente.';
+
+  return `<div class="pdf-page" id="pdf-page-1">
+    ${renderHeader()}
+    ${renderClientBlock(data)}
+    <div class="body">
+
+      <p class="bp" style="margin-top:2px;"><strong>Estimado/a:</strong></p>
+      <p class="bp">Nos complace informarle nuestra mejor propuesta para la obra de referencia. Agradecemos la confianza y ponemos a su disposición el detalle técnico, económico y operativo del sistema constructivo AMZ aplicado a este proyecto.</p>
+
+      <p class="st">Breve descripción del Sistema Constructivo AMZ</p>
+      <p class="bp-b">El sistema AMZ es una metodología de construcción industrializada desarrollada para combinar la precisión de los procesos de fábrica con la flexibilidad del diseño arquitectónico y el montaje en obra. Esto nos permite ofrecer construcciones con altos estándares de calidad, excelente comportamiento térmico, mayor previsibilidad de ejecución y una obra más limpia, ordenada y eficiente.</p>
+      <p class="bp-b">Los muros se fabrican en nuestra planta contemplando las necesidades estructurales, las instalaciones previstas y las características particulares del proyecto, permitiendo lograr:</p>
+      <p class="bullet">- mayor control de calidad desde origen;</p>
+      <p class="bullet">- excelente aislación termoacústica y confort interior;</p>
+      <p class="bullet">- optimización de tiempos de obra;</p>
+      <p class="bullet">- reducción de desperdicios y mayor eficiencia constructiva;</p>
+      <p class="bullet">- una solución sólida, durable y pensada para el largo plazo.</p>
+
+      <p class="st">Propuesta de proyecto</p>
+      <p class="bp" style="white-space:pre-wrap;">${propuesta}</p>
+
+    </div>
+    ${renderFooter(1)}
+  </div>`;
+}
+
+// ─── PÁGINA 2 ─────────────────────────────────
+function buildPage2(data, images) {
+  const m2 = data.superficie || '—';
+  const terreno = data.superficieTerreno;
+  const hasImg = images.plano1 || images.plano2 || images.plano3;
+  const fit = 'max-width:100%;max-height:100%;object-fit:contain;display:block;';
+
+  // Grid de superficies
+  let supGrid = `<div class="sup-grid" data-pb>`;
+  supGrid += `<div class="sup-cell"><div class="sup-lbl">Sup. cubierta / total obra</div><div class="sup-val">${escHtml(String(m2))}</div><div class="sup-unit">m²</div></div>`;
+  if (terreno) {
+    supGrid += `<div class="sup-cell"><div class="sup-lbl">Sup. total del terreno</div><div class="sup-val">${escHtml(String(terreno))}</div><div class="sup-unit">m²</div></div>`;
+  }
+  supGrid += '</div>';
+
+  // Imágenes
+  let imgs = '';
+  if (hasImg) {
+    const s = 'max-width:100%;max-height:100%;object-fit:contain;display:block;';
+    const top = [images.plano1, images.plano2].filter(Boolean);
+    if (top.length === 2) {
+      imgs += `<div style="display:flex;gap:10px;margin-bottom:10px;">
+        <div style="flex:1;border:0.5px solid #C8D4E4;max-height:268px;display:flex;align-items:center;justify-content:center;background:#F9FAFB;overflow:hidden;">
+          <img src="${top[0]}" style="${s}" crossorigin="anonymous"/></div>
+        <div style="flex:1;border:0.5px solid #C8D4E4;max-height:268px;display:flex;align-items:center;justify-content:center;background:#F9FAFB;overflow:hidden;">
+          <img src="${top[1]}" style="${s}" crossorigin="anonymous"/></div>
+      </div>`;
+    } else if (top.length === 1) {
+      imgs += `<div style="border:0.5px solid #C8D4E4;max-height:300px;margin-bottom:10px;display:flex;align-items:center;justify-content:center;background:#F9FAFB;overflow:hidden;">
+        <img src="${top[0]}" style="${s}" crossorigin="anonymous"/></div>`;
+    }
+    if (images.plano3) {
+      imgs += `<div style="border:0.5px solid #C8D4E4;max-height:190px;display:flex;align-items:center;justify-content:center;background:#F9FAFB;overflow:hidden;">
+        <img src="${images.plano3}" style="${s}" crossorigin="anonymous"/></div>`;
+    }
+  }
+
+  return `<div class="pdf-page" id="pdf-page-2">
+    ${renderHeader()}
+    <div class="body">
+      <p class="st" style="margin-top:6px;">Superficie considerada para esta propuesta</p>
+      <p class="bp"><u>La propuesta preliminar contempla aproximadamente ${escHtml(String(m2))} m² cubiertos y totales.</u></p>
+      <p class="bp">En caso de requerir un ajuste más estricto a una superficie objetivo cercana a los ${escHtml(String(m2))} m², la propuesta puede optimizarse en una siguiente instancia de anteproyecto.</p>
+      ${supGrid}
+      <div style="margin-top:8px;">${imgs}</div>
+    </div>
+    ${renderFooter(2)}
+  </div>`;
+}
+
+// ─── PÁGINA 3 ─────────────────────────────────
+function buildPage3(data) {
+  const gen = data.consideracionesGenerales || '';
+  const inc = data.inclusiones || '';
+  return `<div class="pdf-page" id="pdf-page-3">
+    ${renderHeader()}
+    <div class="body">
+      <p class="st" style="margin-top:6px;">Consideraciones técnicas:</p>
+      <p class="st-sub">Generales:</p>
+      ${renderFreeText(gen)}
+      <p class="st-sub" style="margin-top:10px;">Particulares:</p>
+      <p style="font-family:Arial;font-size:9px;font-weight:700;color:#1A1A1A;margin:4px 0 6px 9px;">Inclusiones:</p>
+      ${renderListText(inc)}
+    </div>
+    ${renderFooter(3)}
+  </div>`;
+}
+
+// ─── PÁGINA 4 ─────────────────────────────────
+function buildPage4(data) {
+  const excl = data.exclusiones || '';
+  return `<div class="pdf-page" id="pdf-page-4">
+    ${renderHeader()}
+    <div class="body">
+      <p class="st" style="margin-top:6px;">Exclusiones:</p>
+      ${renderFreeText(excl)}
+    </div>
+    ${renderFooter(4)}
+  </div>`;
+}
+
+// ─── PÁGINA 5 ─────────────────────────────────
+function buildPage5(data) {
+  const precioFmt = fmtUSD(data.precioUsd);
+  const words     = numToWords(data.precioUsd ? String(data.precioUsd).replace(/[^0-9.,]/g,'') : '');
+  const m2        = data.superficie        || '—';
+  const terreno   = data.superficieTerreno;
+  const valM2     = data.valorM2 ? fmtUSD(data.valorM2) : '—';
+
+  return `<div class="pdf-page" id="pdf-page-5">
+    ${renderHeader()}
+    <div class="body">
+
+      <p class="st" style="margin-top:6px;">Oferta Comercial:</p>
+      <p class="st-sub" style="font-weight:400;">Precio:</p>
+      <p class="bp">El siguiente valor corresponde a una propuesta llave en mano estimativa, desarrollada en base al anteproyecto preliminar adjunto y al nivel de terminación considerado para esta instancia.</p>
+
+      <div class="precio-box" data-pb>
+        <div class="precio-titulo">Precio sin impuestos:</div>
+        <div class="precio-row">
+          <span class="precio-cur">USD</span>
+          <span class="precio-amt">${precioFmt}</span>
+        </div>
+        ${words ? `<div class="precio-words">Dólares Estadounidenses ${words}</div>` : ''}
+      </div>
+
+      <p class="bp-b" style="margin-top:8px;">Esta cotización se ha realizado tomando como referencia el plano adjunto en este documento.</p>
+
+      <div class="sup-grid" style="margin:6px 0;" data-pb>
+        <div class="sup-cell">
+          <div class="sup-lbl">Sup. cubierta</div>
+          <div class="sup-val">${escHtml(String(m2))}</div>
+          <div class="sup-unit">m²</div>
+        </div>
+        ${terreno ? `<div class="sup-cell">
+          <div class="sup-lbl">Sup. total del terreno</div>
+          <div class="sup-val">${escHtml(String(terreno))}</div>
+          <div class="sup-unit">m²</div>
+        </div>` : `<div class="sup-cell">
+          <div class="sup-lbl">Superficie total de obra</div>
+          <div class="sup-val">${escHtml(String(m2))}</div>
+          <div class="sup-unit">m²</div>
+        </div>`}
+      </div>
+
+      <p class="bp-i">Referencia para el cliente: Valor por m²&nbsp;&nbsp;&nbsp;USD&nbsp;&nbsp;&nbsp;${valM2}</p>
+      <p class="bp-sm">Este valor constituye una referencia orientativa para la propuesta presentada y podrá variar según ajustes de diseño, definición final de terminaciones, condiciones del terreno y alcance definitivo de obra.</p>
+
+      <p class="st">Forma de pago:</p>
+      <p class="bp">Opción 1: pago contado. Bonificación del 5% sobre el valor final.</p>
+      <p class="bp">Opción 2: Anticipo 40%, saldo por avances durante el plazo de ejecución de la obra.</p>
+      <p class="bp-i">Opción financiación: consultar condiciones.</p>
+
+      <p class="st">Validez de la oferta:</p>
+      <p class="bp">Este presupuesto tiene una válidez de 5 días a partir de la fecha de emisión. La empresa se reserva el derecho de actualizar los precios, condiciones y cualquier particularidad que considere necesario de acuerdo a variaciones del mercado.</p>
+
+      <p class="st">Plazo de ejecución de la obra:</p>
+      <p class="bp">El plazo estimado para la ejecución de la obra es de tres (3) meses, contados a partir del ingreso efectivo al terreno, sujeto a la disponibilidad de materiales y proceso de fabricación.</p>
+
+      <p class="st">Condiciones de inicio de obra:</p>
+      <p class="bp">Para dar inicio a los trabajos, el cliente debe:</p>
+      <p class="bullet">- Abonar el anticipo correspondiente y/o pago total.</p>
+      <p class="bullet">- Asegurar el acceso libre y despejado al terreno.</p>
+      <p class="bullet">- Disponer de un punto de conexión a servicios esenciales (agua, electricidad, gas, cloacas) o prever una alternativa para el suministro.</p>
+
+      <p class="st">Consideraciones finales:</p>
+      <p class="bp">Este documento es una cotización comercial y no implica un compromiso contractual. Las condiciones finales se definirán en el contrato de obra.</p>
+      <p class="bp">Los precios indicados en este presupuesto no incluyen impuestos.</p>
+
+      <p class="bp-i" style="margin-top:14px;">Quedamos a su disposición para cualquier consulta.</p>
+
+      <div style="text-align:right;margin-top:18px;padding-right:4px;">
+        <p style="font-size:8.5px;font-family:Arial;color:#555;font-style:italic;">Dirección comercial</p>
+        <p style="font-size:10px;font-family:Arial;font-weight:700;color:#1C3A5C;margin-top:2px;">Amazonía SAS</p>
+      </div>
+
+    </div>
+    ${renderFooter(5)}
+  </div>`;
+}
+
+// ─── buildPDFPreview ──────────────────────────
 function buildPDFPreview(data, images) {
-  const docNum    = getDocNumber(data);
-  const dateShort = formatDate(data.fecha);
-  const hasDesc   = data.descripcion && data.descripcion.trim().length > 0;
-  const hasEspec  = data.especificaciones && data.especificaciones.trim().length > 0;
-  const hasNotas  = data.notas && data.notas.trim().length > 0;
-  const hasBudget = data.presupuesto && data.presupuesto !== '0';
-  const hasPlanos = images.plano1 || images.plano2 || images.plano3;
-
-  const rawBudget = hasBudget
-    ? parseFloat(data.presupuesto.toString().replace(/\./g,'').replace(',','.'))
-    : null;
-  const costPorConstruido = rawBudget && data.areaConstruida && parseFloat(data.areaConstruida) > 0
-    ? formatCOP(rawBudget / parseFloat(data.areaConstruida))
-    : null;
-
-  const clientLogoHtml = images.logoCliente
-    ? `<img src="${images.logoCliente}" alt="Cliente"
-         style="max-width:90px;max-height:55px;object-fit:contain;display:block;"
-         crossorigin="anonymous"/>`
-    : '';
-
-  return `<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8"/>
-<style>
-  *{box-sizing:border-box;margin:0;padding:0;}
-  body{font-family:Arial,Helvetica,sans-serif;background:#fff;}
-
-  .pdf-page{
-    width:794px;
-    min-height:1123px;
-    background:#FFFFFF;
-    display:flex;
-    flex-direction:column;
-    position:relative;
-  }
-
-  .pdf-top-rule{ height:3px; background:#1B4332; }
-  .pdf-top-rule-gold{ height:1.5px; background:#D4A017; }
-
-  .pdf-header{
-    padding:14px 28px 12px 28px;
-    display:flex;align-items:flex-end;justify-content:space-between;
-    border-bottom:1px solid #E0E0E0;
-  }
-  .pdf-header-right{ text-align:right; }
-  .pdf-header-right .project-title-sm{
-    font-size:9px;font-family:Arial,sans-serif;color:#9CA3AF;
-    letter-spacing:1px;text-transform:uppercase;margin-bottom:3px;
-  }
-  .pdf-header-right .project-name-sm{
-    font-size:11px;font-family:Georgia,serif;color:#1A1A1A;font-weight:700;letter-spacing:0.3px;
-  }
-  .pdf-header-meta{ display:flex;gap:18px;margin-top:6px;justify-content:flex-end; }
-  .pdf-header-meta-item{ text-align:center; }
-  .pdf-header-meta-label{ font-size:6.5px;font-family:Arial,sans-serif;color:#9CA3AF;letter-spacing:1.5px;text-transform:uppercase; }
-  .pdf-header-meta-val{ font-size:9.5px;font-family:Arial,sans-serif;color:#1A1A1A;font-weight:600;letter-spacing:0.5px; }
-
-  .pdf-project-band{
-    padding:16px 28px 14px 28px;
-    border-bottom:1px solid #E0E0E0;
-    display:flex;gap:20px;align-items:flex-start;
-  }
-  .pdf-project-name-big{ flex:0 0 auto;max-width:200px; }
-  .pdf-project-name-big .tipo{
-    font-size:8px;font-family:Arial,sans-serif;color:#9CA3AF;
-    letter-spacing:2px;text-transform:uppercase;margin-bottom:5px;
-  }
-  .pdf-project-name-big .nombre-line1{
-    font-size:20px;font-weight:300;font-family:Georgia,serif;
-    color:#1A1A1A;line-height:1.1;font-style:italic;
-  }
-  .pdf-project-name-big .nombre-line2{
-    font-size:20px;font-weight:700;font-family:Georgia,serif;color:#1A1A1A;line-height:1.1;
-  }
-  .pdf-project-name-big .ubicacion{
-    font-size:9px;font-family:Arial,sans-serif;color:#6B7280;margin-top:7px;letter-spacing:0.3px;
-  }
-
-  .pdf-vdivider{ width:1px;background:#E0E0E0;align-self:stretch;flex-shrink:0; }
-
-  .pdf-project-info{ flex:1;min-width:0; }
-  .pdf-project-desc{
-    font-size:9.5px;font-family:Arial,sans-serif;color:#4B5563;line-height:1.7;margin-bottom:12px;
-  }
-  .pdf-data-grid{ display:grid;grid-template-columns:repeat(3,1fr);gap:0 16px; }
-
-  /* Bloque m² — SIN border-top en .bh-unit para evitar la línea visual */
-  .pdf-budget-highlight{
-    flex:0 0 auto;width:110px;border:1px solid #1B4332;
-    padding:10px 12px;text-align:center;
-    display:flex;flex-direction:column;align-items:center;justify-content:center;
-    gap:3px;background:#FAFEFA;
-  }
-  .bh-label{
-    font-size:7px;font-family:Arial,sans-serif;
-    color:#9CA3AF;letter-spacing:1.5px;text-transform:uppercase;
-  }
-  .bh-m2{
-    font-size:28px;font-family:Georgia,serif;
-    font-weight:700;color:#1B4332;line-height:1;
-    margin-top:2px;
-  }
-  .bh-unit{
-    /* Sin border-top — era la causa de la línea visual sobre el número */
-    font-size:9px;font-family:Arial,sans-serif;
-    color:#40916C;letter-spacing:1px;
-    padding-top:3px;
-    width:100%;text-align:center;
-  }
-  .bh-price{
-    font-size:10px;font-family:Arial,sans-serif;font-weight:700;color:#1A1A1A;
-    border-top:1px solid #D1FAE5;
-    padding-top:6px;margin-top:4px;width:100%;text-align:center;
-  }
-
-  .pdf-client-area{
-    flex:0 0 auto;width:100px;
-    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
-  }
-  .pdf-client-area .cl-label{
-    font-size:7px;font-family:Arial,sans-serif;color:#D1D5DB;letter-spacing:1.5px;
-    text-transform:uppercase;text-align:center;
-  }
-
-  .pdf-body{ flex:1;padding:16px 28px 20px 28px; }
-
-  .pdf-section-label{
-    font-size:7.5px;font-family:Arial,sans-serif;color:#1B4332;letter-spacing:2.5px;
-    text-transform:uppercase;font-weight:700;margin-bottom:8px;
-    display:flex;align-items:center;gap:8px;
-  }
-  .pdf-section-label::after{ content:'';flex:1;height:1px;background:#E0E0E0; }
-
-  .pdf-free-text{
-    font-size:9.5px;font-family:Arial,sans-serif;color:#4B5563;
-    line-height:1.75;white-space:pre-wrap;word-break:break-word;
-  }
-  .pdf-empty-text{
-    font-size:9.5px;font-family:Arial,sans-serif;color:#D1D5DB;font-style:italic;
-  }
-
-  /* break-inside: avoid en todas las secciones */
-  [data-pb]{
-    break-inside: avoid;
-    page-break-inside: avoid;
-  }
-
-  .pdf-budget-table{ width:100%;border-collapse:collapse; }
-  .pdf-budget-table th{
-    font-size:8px;font-family:Arial,sans-serif;color:#9CA3AF;letter-spacing:1.5px;
-    text-transform:uppercase;font-weight:700;padding:6px 0;
-    border-bottom:1px solid #E0E0E0;text-align:left;
-  }
-  .pdf-budget-table th:last-child{ text-align:right; }
-  .pdf-budget-table td{
-    font-size:9.5px;font-family:Arial,sans-serif;color:#374151;
-    padding:6px 0;border-bottom:1px solid #F3F4F6;
-  }
-  .pdf-budget-table td:last-child{ text-align:right;color:#1B4332;font-weight:600; }
-  .pdf-budget-total td{
-    font-weight:700;color:#1A1A1A;border-top:1.5px solid #1B4332;
-    border-bottom:none;font-size:10px;padding-top:8px;
-  }
-  .pdf-budget-total td:last-child{ color:#1B4332; }
-
-  .pdf-sign-grid{ display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-top:18px; }
-  .pdf-sign-box{ border-top:1.5px solid #1A1A1A;padding-top:6px; }
-  .pdf-sign-name{ font-size:9.5px;font-family:Arial,sans-serif;color:#1A1A1A;font-weight:600;min-height:16px; }
-  .pdf-sign-label{ font-size:7.5px;font-family:Arial,sans-serif;color:#9CA3AF;letter-spacing:1px;text-transform:uppercase;margin-top:2px; }
-
-  .pdf-footer{
-    border-top:1px solid #E0E0E0;padding:9px 28px;
-    display:flex;align-items:center;justify-content:space-between;
-    background:#FAFAF8;
-  }
-  .pdf-footer-brand{ font-size:9px;font-family:Georgia,serif;font-weight:700;color:#1B4332;letter-spacing:2.5px; }
-  .pdf-footer-sub{ font-size:6.5px;font-family:Arial,sans-serif;color:#9CA3AF;letter-spacing:2px;text-transform:uppercase;margin-top:1px; }
-  .pdf-footer-center{ font-size:8px;font-family:Arial,sans-serif;color:#9CA3AF;text-align:center;line-height:1.7; }
-  .pdf-footer-right{ font-size:8px;font-family:Arial,sans-serif;color:#9CA3AF;text-align:right;line-height:1.6; }
-</style>
-</head>
-<body>
-<div class="pdf-page" id="pdf-page">
-
-  <div class="pdf-top-rule"></div>
-  <div class="pdf-top-rule-gold"></div>
-
-  <!-- ═══ HEADER ═══ -->
-  <div class="pdf-header">
-    <div>${AMAZONIA_LOGO_SVG}</div>
-    <div class="pdf-header-right">
-      <div class="project-title-sm">Ficha Técnica de Proyecto</div>
-      <div class="project-name-sm">${data.nombreProyecto ? escapeHtml(data.nombreProyecto) : 'Nombre del Proyecto'}</div>
-      <div class="pdf-header-meta">
-        <div class="pdf-header-meta-item">
-          <div class="pdf-header-meta-label">Fecha</div>
-          <div class="pdf-header-meta-val">${dateShort}</div>
-        </div>
-        <div class="pdf-header-meta-item">
-          <div class="pdf-header-meta-label">Código</div>
-          <div class="pdf-header-meta-val">${docNum}</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ═══ BANDA DEL PROYECTO ═══ -->
-  <div class="pdf-project-band" data-pb>
-    <div class="pdf-project-name-big">
-      <div class="tipo">${data.tipoObra || 'Proyecto'}</div>
-      ${(() => {
-        const nombre = data.nombreProyecto ? escapeHtml(data.nombreProyecto) : 'Nombre del Proyecto';
-        const partes = nombre.split(' ');
-        if (partes.length >= 2) {
-          return `<div class="nombre-line1">${partes[0]}</div>
-                  <div class="nombre-line2">${partes.slice(1).join(' ')}</div>`;
-        }
-        return `<div class="nombre-line2">${nombre}</div>`;
-      })()}
-      ${data.ubicacion ? `<div class="ubicacion">${escapeHtml(data.ubicacion)}</div>` : ''}
-    </div>
-
-    <div class="pdf-vdivider"></div>
-
-    <div class="pdf-project-info">
-      ${hasDesc
-        ? `<div class="pdf-project-desc">${escapeHtml(data.descripcion)}</div>`
-        : '<div class="pdf-project-desc" style="color:#D1D5DB;font-style:italic;">Sin descripción.</div>'
-      }
-      <div class="pdf-data-grid">
-        ${dataField('Tipología', data.tipoObra)}
-        ${dataField('Organización', data.arquitecto ? escapeHtml(data.arquitecto) : null)}
-        ${dataField('Encargado', data.arquitecto ? escapeHtml(data.arquitecto) : null)}
-        ${dataField('Área Total', data.areaTotal ? formatNum(data.areaTotal,'m²') : null)}
-        ${dataField('Área Construida', data.areaConstruida ? formatNum(data.areaConstruida,'m²') : null)}
-        ${dataField('Plazo', data.plazo ? formatNum(data.plazo,'días') : null)}
-      </div>
-    </div>
-
-    <div class="pdf-vdivider"></div>
-
-    <div class="pdf-budget-highlight">
-      <div class="bh-label">Área Construida</div>
-      <div class="bh-m2">${data.areaConstruida ? formatNum(data.areaConstruida) : '—'}</div>
-      <div class="bh-unit">m² ${data.tipoObra ? escapeHtml(data.tipoObra) : ''}</div>
-      <div class="bh-price">${hasBudget ? formatCOP(data.presupuesto) : '$ ___________'}</div>
-    </div>
-
-    ${images.logoCliente ? `
-    <div class="pdf-vdivider"></div>
-    <div class="pdf-client-area">
-      ${clientLogoHtml}
-      <div class="cl-label">Cliente</div>
-    </div>` : ''}
-  </div>
-
-  <!-- ═══ CUERPO ═══ -->
-  <div class="pdf-body">
-
-    ${hasPlanos ? `
-    <div data-pb>
-      <div class="pdf-section-label">Planos del Proyecto</div>
-      ${renderPlanosSection(images)}
-    </div>` : ''}
-
-    ${hasEspec ? `
-    <div data-pb style="margin-top:18px;">
-      <div class="pdf-section-label">Especificaciones Técnicas</div>
-      <p class="pdf-free-text">${escapeHtml(data.especificaciones)}</p>
-    </div>` : ''}
-
-    ${hasBudget ? `
-    <div data-pb style="margin-top:18px;">
-      <div class="pdf-section-label">Resumen Presupuestal</div>
-      <table class="pdf-budget-table">
-        <thead>
-          <tr><th>Concepto</th><th>Valor</th></tr>
-        </thead>
-        <tbody>
-          <tr><td>Presupuesto Total de la Obra</td><td>${formatCOP(data.presupuesto)}</td></tr>
-          ${data.areaTotal ? `<tr><td>Área Total del Lote</td><td>${formatNum(data.areaTotal,'m²')}</td></tr>` : ''}
-          ${data.areaConstruida ? `<tr><td>Área Construida</td><td>${formatNum(data.areaConstruida,'m²')}</td></tr>` : ''}
-          ${costPorConstruido ? `<tr><td>Costo por m² Construido</td><td>${costPorConstruido}</td></tr>` : ''}
-          ${data.plazo ? `<tr><td>Plazo de Ejecución</td><td>${formatNum(data.plazo,'días')}</td></tr>` : ''}
-        </tbody>
-        <tfoot>
-          <tr class="pdf-budget-total">
-            <td>TOTAL APROBADO</td>
-            <td>${formatCOP(data.presupuesto)}</td>
-          </tr>
-        </tfoot>
-      </table>
-    </div>` : ''}
-
-    ${hasNotas ? `
-    <div data-pb style="margin-top:18px;">
-      <div class="pdf-section-label">Notas</div>
-      <p class="pdf-free-text" style="font-size:8.5px;color:#6B7280;">${escapeHtml(data.notas)}</p>
-    </div>` : ''}
-
-    <div data-pb class="pdf-sign-grid">
-      <div class="pdf-sign-box">
-        <div class="pdf-sign-name">${data.arquitecto ? escapeHtml(data.arquitecto) : ''}</div>
-        <div class="pdf-sign-label">Elaborado por</div>
-      </div>
-      <div class="pdf-sign-box">
-        <div class="pdf-sign-name"></div>
-        <div class="pdf-sign-label">Revisado por</div>
-      </div>
-      <div class="pdf-sign-box">
-        <div class="pdf-sign-name"></div>
-        <div class="pdf-sign-label">Aprobado por</div>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- ═══ FOOTER ═══ -->
-  <div class="pdf-footer">
-    <div>
-      <div class="pdf-footer-brand">AMAZONIA</div>
-      <div class="pdf-footer-sub">Arquitectura · Construcción</div>
-    </div>
-    <div class="pdf-footer-center">
-      contacto@amazonia.com.co · www.amazonia.com.co<br/>
-      Colombia · Construyendo el futuro con naturaleza
-    </div>
-    <div class="pdf-footer-right">
-      Documento de Presentación — ${new Date().getFullYear()}<br/>
-      Ref: ${docNum}
-    </div>
-  </div>
-
-</div>
-</body>
-</html>`;
+  const div = (label) => `<div style="height:18px;background:#EAEAEA;display:flex;align-items:center;justify-content:center;border-top:1.5px dashed #C8C8C8;border-bottom:1.5px dashed #C8C8C8;">
+    <span style="font-size:8.5px;color:#AAAAAA;font-family:Arial;">— ${label} —</span></div>`;
+  return `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"/>
+<style>${BASE_STYLES}</style></head><body>
+${buildPage1(data)}
+${div('Página 2')}
+${buildPage2(data, images)}
+${div('Página 3')}
+${buildPage3(data)}
+${div('Página 4')}
+${buildPage4(data)}
+${div('Página 5')}
+${buildPage5(data)}
+</body></html>`;
 }
 
-// ─────────────────────────────────────────────
-//  generateAndDownloadPDF — páginas A4 exactas
-//  · Footer siempre al fondo absoluto
-//  · Padding superior en páginas de continuación
-// ─────────────────────────────────────────────
+// ─── generateAndDownloadPDF ───────────────────
 async function generateAndDownloadPDF(data, images) {
-  const htmlContent = buildPDFPreview(data, images);
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4', compress: true });
 
-  const iframe = document.createElement('iframe');
-  iframe.style.cssText = `position:fixed;left:-9999px;top:-9999px;width:794px;height:1123px;border:none;visibility:hidden;z-index:-1;`;
-  document.body.appendChild(iframe);
+  const pages = [
+    () => buildPage1(data),
+    () => buildPage2(data, images),
+    () => buildPage3(data),
+    () => buildPage4(data),
+    () => buildPage5(data),
+  ];
 
-  const iDoc = iframe.contentDocument || iframe.contentWindow.document;
-  iDoc.open();
-  iDoc.write(htmlContent);
-  iDoc.close();
+  for (let i = 0; i < pages.length; i++) {
+    const html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"/>
+      <style>${BASE_STYLES}</style></head><body>${pages[i]()}</body></html>`;
 
-  await new Promise(resolve => {
-    const check = () => {
-      const imgs = iDoc.querySelectorAll('img');
-      const allLoaded = Array.from(imgs).every(img => img.complete && img.naturalWidth > 0);
-      if (imgs.length === 0 || allLoaded) resolve();
-      else setTimeout(check, 150);
-    };
-    setTimeout(check, 700);
-  });
+    const iframe = document.createElement('iframe');
+    iframe.style.cssText = 'position:fixed;left:-9999px;top:-9999px;width:794px;height:1123px;border:none;visibility:hidden;z-index:-1;';
+    document.body.appendChild(iframe);
+    const iDoc = iframe.contentDocument || iframe.contentWindow.document;
+    iDoc.open(); iDoc.write(html); iDoc.close();
 
-  try {
-    const S         = 3;           // capture scale — 3x para alta resolución
-    const PAGE_H_C  = 1123 * S;    // canvas px por página A4
-    const FOOTER_H_C = 44 * S;     // altura del footer en canvas px
-    const TOP_PAD_C  = 38 * S;     // margen superior en páginas de continuación
-
-    // Espacio de contenido disponible por página
-    const AVAIL_P1_C   = PAGE_H_C - FOOTER_H_C;             // página 1
-    const AVAIL_CONT_C = PAGE_H_C - FOOTER_H_C - TOP_PAD_C; // páginas 2+
-
-    const pageEl  = iDoc.querySelector('#pdf-page') || iDoc.body;
-    const pageRect = pageEl.getBoundingClientRect();
-
-    // Posiciones DOM de secciones (para saltos inteligentes)
-    const sectionTopsDom = Array.from(iDoc.querySelectorAll('[data-pb]'))
-      .map(el => Math.round(el.getBoundingClientRect().top - pageRect.top))
-      .filter(y => y > 50)
-      .sort((a, b) => a - b);
-
-    // Posición del footer HTML → el contenido termina aquí
-    const htmlFooterEl     = iDoc.querySelector('.pdf-footer');
-    const contentEndDom    = htmlFooterEl
-      ? Math.round(htmlFooterEl.getBoundingClientRect().top - pageRect.top)
-      : null;
-
-    // Capturar canvas completo
-    const canvas = await html2canvas(pageEl, {
-      scale: S,
-      useCORS: true,
-      allowTaint: true,
-      backgroundColor: '#FFFFFF',
-      width: 794,
-      height: Math.max(1123, pageEl.scrollHeight),
-      windowWidth: 794,
-      logging: false,
-      imageTimeout: 20000,
-      onclone: (clonedDoc) => {
-        const el = clonedDoc.querySelector('#pdf-page');
-        if (el) { el.style.position = 'relative'; el.style.overflow = 'visible'; }
-      }
+    await new Promise(resolve => {
+      const check = () => {
+        const imgs = iDoc.querySelectorAll('img');
+        const ok = Array.from(imgs).every(img => img.complete && img.naturalWidth > 0);
+        if (!imgs.length || ok) resolve(); else setTimeout(check, 150);
+      };
+      setTimeout(check, 700);
     });
 
-    const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4', compress: true });
-    const docNum = getDocNumber(data);
-
-    // ── Caso simple: todo en una página ──
-    if (canvas.height <= PAGE_H_C) {
-      pdf.addImage(canvas.toDataURL('image/jpeg', 1.0), 'JPEG', 0, 0, 210, 210 * canvas.height / canvas.width);
-
-    } else {
-      // ── Multi-página ──
-      // El contenido termina antes del footer HTML
-      const contentEndCanvas = contentEndDom !== null ? contentEndDom * S : canvas.height;
-      const bpCanvas = sectionTopsDom.map(y => y * S);
-
-      // Construir slices
-      const slices = [];
-      let curStart  = 0;
-      let firstPage = true;
-
-      while (curStart < contentEndCanvas) {
-        const avail  = firstPage ? AVAIL_P1_C : AVAIL_CONT_C;
-        const maxEnd = curStart + avail;
-
-        if (maxEnd >= contentEndCanvas) {
-          slices.push({ start: curStart, end: contentEndCanvas, first: firstPage });
-          break;
-        }
-
-        // Último break point antes de maxEnd
-        let bestBreak = maxEnd;
-        for (let i = bpCanvas.length - 1; i >= 0; i--) {
-          if (bpCanvas[i] > curStart + 80 * S && bpCanvas[i] <= maxEnd) {
-            bestBreak = bpCanvas[i];
-            break;
-          }
-        }
-
-        slices.push({ start: curStart, end: bestBreak, first: firstPage });
-        curStart  = bestBreak;
-        firstPage = false;
-      }
-
-      slices.forEach(({ start, end, first }, idx) => {
-        const topPad   = first ? 0 : TOP_PAD_C;
-        const contentH = end - start;
-
-        // Todas las páginas son exactamente A4 (PAGE_H_C)
-        const sliceCanvas = document.createElement('canvas');
-        sliceCanvas.width  = canvas.width;
-        sliceCanvas.height = PAGE_H_C;
-        const ctx = sliceCanvas.getContext('2d');
-
-        // Fondo blanco
-        ctx.fillStyle = '#FFFFFF';
-        ctx.fillRect(0, 0, sliceCanvas.width, sliceCanvas.height);
-
-        // Líneas de marca en páginas de continuación (igual que el header del template)
-        if (!first) {
-          ctx.fillStyle = '#1B4332';
-          ctx.fillRect(0, 0, sliceCanvas.width, 3 * S);
-          ctx.fillStyle = '#D4A017';
-          ctx.fillRect(0, 3 * S, sliceCanvas.width, 1.5 * S);
-        }
-
-        // Contenido con padding superior
-        ctx.drawImage(canvas,
-          0, start,          canvas.width, contentH,  // fuente
-          0, topPad,         canvas.width, contentH   // destino
-        );
-
-        // Footer siempre al fondo absoluto (PAGE_H_C - FOOTER_H_C)
-        drawCanvasFooter(ctx, sliceCanvas.width, sliceCanvas.height, idx + 1, docNum, S);
-
-        if (idx > 0) pdf.addPage();
-        // Siempre 210×297mm — A4 exacto
-        pdf.addImage(sliceCanvas.toDataURL('image/jpeg', 1.0), 'JPEG', 0, 0, 210, 297);
+    try {
+      const el = iDoc.querySelector('.pdf-page') || iDoc.body;
+      const canvas = await html2canvas(el, {
+        scale: 3, useCORS: true, allowTaint: true,
+        backgroundColor: '#FFFFFF', width: 794, height: 1123,
+        windowWidth: 794, logging: false, imageTimeout: 20000,
       });
+      if (i > 0) pdf.addPage();
+      pdf.addImage(canvas.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, 210, 297);
+    } finally {
+      document.body.removeChild(iframe);
     }
-
-    const projName = (data.nombreProyecto || 'Proyecto')
-      .replace(/[^a-zA-Z0-9\s\-_áéíóúÁÉÍÓÚñÑ]/g, '')
-      .replace(/\s+/g, '_')
-      .substring(0, 40);
-    const dateTag = data.fecha
-      ? data.fecha.replace(/-/g, '')
-      : new Date().toISOString().slice(0,10).replace(/-/g,'');
-
-    pdf.save(`FichaTecnica_${projName}_${dateTag}.pdf`);
-    return { success: true };
-
-  } finally {
-    document.body.removeChild(iframe);
   }
+
+  const cliente = (data.apellidoNombre || 'Cliente')
+    .replace(/[^a-zA-Z0-9\s\-_áéíóúÁÉÍÓÚñÑ]/g,'').replace(/\s+/g,'_').substring(0,30);
+  const num = (data.numeroCotizacion || '').replace(/[\s\/]/g,'');
+  pdf.save(`Cotizacion_${cliente}_${num || new Date().toISOString().slice(0,10).replace(/-/g,'')}.pdf`);
+  return { success: true };
 }
