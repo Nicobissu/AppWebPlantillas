@@ -876,6 +876,7 @@ body {
   letter-spacing: 1px;
   background: #F4F6FA !important;
   color: #6B7280 !important;
+  -webkit-text-fill-color: #6B7280 !important;
   flex-shrink: 0;
   cursor: default;
   pointer-events: none;
