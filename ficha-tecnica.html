@@ -19,17 +19,22 @@
   <nav class="amazonia-navbar">
     <div class="max-w-screen-2xl mx-auto px-6 py-3 flex items-center justify-between">
       <a href="index.html" class="flex items-center gap-3 nav-logo">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 70 70" width="40" height="40">
-          <circle cx="35" cy="35" r="32" fill="rgba(255,255,255,0.15)"/>
-          <polygon points="35,8 58,55 12,55" fill="none" stroke="white" stroke-width="2.5" stroke-linejoin="round"/>
-          <line x1="21" y1="40" x2="49" y2="40" stroke="#D4A017" stroke-width="2.5" stroke-linecap="round"/>
-          <polygon points="35,4 42,18 28,18" fill="#74C69D"/>
-          <rect x="30" y="44" width="5" height="5" fill="#D4A017" rx="0.5" opacity="0.9"/>
-          <rect x="39" y="44" width="5" height="5" fill="#D4A017" rx="0.5" opacity="0.9"/>
+        <!-- AMZ Logomark -->
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 290 100" width="107" height="37">
+          <!-- A: dos barras "/" con gap = ancho de barra -->
+          <polygon points="0,100 26,100 51,0 25,0" fill="white"/>
+          <polygon points="52,100 78,100 103,0 77,0" fill="white"/>
+          <!-- M: dos barras "/" mismas proporciones -->
+          <polygon points="100,100 126,100 151,0 125,0" fill="white"/>
+          <polygon points="152,100 178,100 203,0 177,0" fill="white"/>
+          <!-- Z: barra superior + diagonal \ + barra inferior -->
+          <polygon points="208,0 288,0 288,28 208,28" fill="white"/>
+          <polygon points="288,28 288,56 208,72 208,44" fill="white"/>
+          <polygon points="208,72 288,72 288,100 208,100" fill="white"/>
         </svg>
         <div>
-          <div class="nav-brand-text" style="font-size:1.1rem;">AMAZONIA</div>
-          <div class="nav-brand-sub">Construcción</div>
+          <div class="nav-brand-text">AMAZONÍA</div>
+          <div class="nav-brand-sub">Construcción Industrializada</div>
         </div>
       </a>
       <div class="flex items-center gap-3">
@@ -68,7 +73,7 @@
 
   <!-- MAIN -->
   <div class="max-w-screen-2xl mx-auto px-4 md:px-6 py-8">
-    <div class="grid grid-cols-1 xl:grid-cols-2 gap-8 items-start">
+    <div class="flex flex-col gap-8">
 
       <!-- FORM -->
       <div class="space-y-5 animate-slide-left">
@@ -113,10 +118,22 @@
                   <input type="date" id="fecha" name="fecha" class="form-input" required />
                 </div>
                 <div class="form-group">
-                  <label class="form-label" for="numero-cotizacion">Número de Cotización <span class="required-star">*</span></label>
-                  <input type="text" id="numero-cotizacion" name="numeroCotizacion"
-                    class="form-input" placeholder="Ej: AM- 2026/ 0013" required autocomplete="off" />
-                  <div class="field-error" id="error-numero" style="display:none;">⚠ El número de cotización es obligatorio.</div>
+                  <label class="form-label">Número de Cotización <span class="required-star">*</span></label>
+                  <div class="num-cot-group">
+                    <input type="text" id="num-prefijo" maxlength="2"
+                      class="form-input num-cot-prefix" placeholder="AM"
+                      autocomplete="off" title="Dos letras identificadoras (ej: AM)" />
+                    <span class="num-cot-sep">—</span>
+                    <input type="text" id="num-anio" readonly
+                      class="form-input num-cot-year" title="Año (generado automáticamente)" />
+                    <span class="num-cot-sep">/</span>
+                    <input type="text" id="num-numero"
+                      class="form-input num-cot-num" placeholder="0013"
+                      autocomplete="off" inputmode="numeric" title="Número de cotización" />
+                  </div>
+                  <p class="text-xs text-[#9CA3AF] mt-1.5">Resultado: <strong id="num-preview" class="text-[#1B4332]">AM — 2026 / 0013</strong></p>
+                  <input type="hidden" id="numero-cotizacion" name="numeroCotizacion" required />
+                  <div class="field-error" id="error-numero" style="display:none;">⚠ Ingrese el número de cotización.</div>
                 </div>
               </div>
             </div>
@@ -243,10 +260,9 @@
               </div>
 
               <div class="form-group">
-                <label class="form-label" for="inclusiones">Inclusiones Particulares</label>
-                <textarea id="inclusiones" name="inclusiones"
-                  class="form-textarea" rows="14"></textarea>
-                <p class="text-xs text-[#9CA3AF] mt-1">Aparece en la página 3, sección "Inclusiones".</p>
+                <label class="form-label">Inclusiones Particulares</label>
+                <div id="inclusiones-ui" class="inclusiones-ui"></div>
+                <p class="text-xs text-[#9CA3AF] mt-3">Aparece en la pág. 3 con estado <strong class="text-[#40916C]">Incluye</strong> / <strong class="text-red-500">No incluye</strong> y descripción.</p>
               </div>
 
             </div>
@@ -345,14 +361,24 @@
       </div>
 
       <!-- PREVIEW -->
-      <div class="animate-slide-right">
+      <div class="animate-slide-up animate-delay-200">
         <div class="preview-panel" id="preview-panel">
           <div class="preview-panel-header">
             <div class="flex items-center">
               <span class="preview-dot"></span>
               Vista Previa del PDF
             </div>
-            <span class="text-white/50 text-xs font-normal normal-case">A4 · 794 × 1123 px</span>
+            <div class="preview-nav" id="preview-nav">
+              <button type="button" id="prev-page" class="preview-nav-btn" title="Página anterior">&#8249;</button>
+              <div class="preview-page-tabs" id="page-tabs">
+                <button type="button" class="page-tab active" data-page="1" title="Página 1">1</button>
+                <button type="button" class="page-tab" data-page="2" title="Página 2">2</button>
+                <button type="button" class="page-tab" data-page="3" title="Página 3">3</button>
+                <button type="button" class="page-tab" data-page="4" title="Página 4">4</button>
+                <button type="button" class="page-tab" data-page="5" title="Página 5">5</button>
+              </div>
+              <button type="button" id="next-page" class="preview-nav-btn" title="Página siguiente">&#8250;</button>
+            </div>
           </div>
           <div class="preview-scroll-container" id="preview-scroll">
             <div class="preview-wrapper">
@@ -372,6 +398,10 @@
                 </div>
               </div>
             </div>
+          </div>
+          <div class="preview-panel-footer">
+            <span>Página <strong id="current-page-display">1</strong> de 5</span>
+            <span>A4 &middot; 794 &times; 1123 px</span>
           </div>
         </div>
       </div>

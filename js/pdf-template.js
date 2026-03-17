@@ -41,6 +41,24 @@ function numToWords(val) {
   return triple(n).trim();
 }
 
+// Renderiza inclusiones estructuradas (array de objetos {label, estado, descripcion})
+function renderInclusionesStructured(inclusions) {
+  if (!inclusions || !inclusions.length) return '';
+  return inclusions.map(item => {
+    const isIncluye   = item.estado === 'incluye';
+    const estadoTxt   = isIncluye ? 'Incluye' : 'No incluye';
+    const estadoColor = isIncluye ? '#1B4332' : '#B91C1C';
+    const descHtml    = isIncluye && item.descripcion && item.descripcion.trim()
+      ? `<span style="font-size:8.5px;font-family:Arial;color:#1A1A1A;line-height:1.55;flex:1;">— ${escHtml(item.descripcion)}</span>`
+      : '';
+    return `<div style="display:flex;gap:0;margin-bottom:3px;align-items:flex-start;">
+      <span style="font-weight:700;min-width:128px;max-width:128px;flex-shrink:0;font-size:8.5px;font-family:Arial;color:#1A1A1A;line-height:1.55;">- ${escHtml(item.label)}:</span>
+      <span style="font-size:8.5px;font-family:Arial;color:${estadoColor};font-weight:700;line-height:1.55;white-space:nowrap;margin-right:6px;flex-shrink:0;">${estadoTxt}</span>
+      ${descHtml}
+    </div>`;
+  }).join('');
+}
+
 // Renderiza texto libre de inclusiones: líneas "- Label: valor" → columnas bold/normal
 function renderListText(rawText) {
   if (!rawText) return '';
@@ -84,28 +102,34 @@ body{font-family:Arial,Helvetica,sans-serif;background:#fff;}
 
 /* ── HEADER ── */
 .hdr{
-  position:relative;width:794px;height:74px;
+  position:relative;width:794px;height:82px;
   background:white;overflow:hidden;flex-shrink:0;
   border-bottom:1.5px solid #C8D4E4;
 }
 .hdr-logo{
   position:absolute;left:24px;top:0;bottom:0;
   display:flex;flex-direction:column;justify-content:center;
+  gap:3px;
   z-index:2;
 }
+.amz-mark{
+  display:block;
+}
 .amz-name{
-  font-family:Georgia,'Times New Roman',serif;
-  font-size:23px;font-weight:700;
-  color:#1C3A5C;letter-spacing:2.5px;line-height:1;
+  font-family:Arial,sans-serif;
+  font-size:18px;font-weight:900;
+  color:#1C3A5C;letter-spacing:5px;line-height:1;
+  text-transform:uppercase;
 }
 .amz-rule{
-  width:220px;height:1px;
-  background:linear-gradient(to right,#8AAEC4 70%,transparent);
-  margin:5px 0 4px 0;
+  width:200px;height:1px;
+  background:#1C3A5C;
+  margin:1px 0;
 }
 .amz-sub{
-  font-family:Arial,sans-serif;font-size:6.8px;
-  color:#8AAEC4;letter-spacing:5px;text-transform:uppercase;
+  font-family:Arial,sans-serif;font-size:6.2px;
+  color:#1C3A5C;letter-spacing:4.5px;text-transform:uppercase;
+  opacity:0.7;
 }
 .hdr-cot{
   position:absolute;right:14px;top:50%;transform:translateY(-50%);
@@ -207,16 +231,28 @@ body{font-family:Arial,Helvetica,sans-serif;background:#fff;}
 function renderHeader() {
   return `
   <div class="hdr">
-    <svg style="position:absolute;top:0;right:0;" width="310" height="74"
-         viewBox="0 0 310 74" xmlns="http://www.w3.org/2000/svg">
-      <polygon points="80,0 310,0 310,74 230,74" fill="#D4B896" opacity="0.45"/>
-      <polygon points="195,0 310,0 310,74 285,74" fill="#7A9EC0" opacity="0.6"/>
-      <polygon points="248,0 310,0 310,56" fill="#1C3A5C"/>
-      <polygon points="276,74 310,74 310,58" fill="#2B5280" opacity="0.5"/>
+    <svg style="position:absolute;top:0;right:0;" width="310" height="82"
+         viewBox="0 0 310 82" xmlns="http://www.w3.org/2000/svg">
+      <polygon points="80,0 310,0 310,82 230,82" fill="#D4B896" opacity="0.40"/>
+      <polygon points="195,0 310,0 310,82 285,82" fill="#7A9EC0" opacity="0.55"/>
+      <polygon points="248,0 310,0 310,62" fill="#1C3A5C"/>
+      <polygon points="276,82 310,82 310,64" fill="#2B5280" opacity="0.5"/>
     </svg>
     <div class="hdr-logo">
-      <div class="amz-name">AMAZONÍA</div>
+      <svg class="amz-mark" viewBox="0 0 290 100" width="116" height="40" xmlns="http://www.w3.org/2000/svg">
+        <!-- A: dos barras "/" con gap = ancho de barra -->
+        <polygon points="0,100 26,100 51,0 25,0" fill="#1C3A5C"/>
+        <polygon points="52,100 78,100 103,0 77,0" fill="#1C3A5C"/>
+        <!-- M: dos barras "/" mismas proporciones -->
+        <polygon points="100,100 126,100 151,0 125,0" fill="#1C3A5C"/>
+        <polygon points="152,100 178,100 203,0 177,0" fill="#1C3A5C"/>
+        <!-- Z: barra superior + diagonal \ + barra inferior -->
+        <polygon points="208,0 288,0 288,28 208,28" fill="#1C3A5C"/>
+        <polygon points="288,28 288,56 208,72 208,44" fill="#1C3A5C"/>
+        <polygon points="208,72 288,72 288,100 208,100" fill="#1C3A5C"/>
+      </svg>
       <div class="amz-rule"></div>
+      <div class="amz-name">AMAZONÍA</div>
       <div class="amz-sub">Construcción Industrializada</div>
     </div>
     <div class="hdr-cot">Cotización</div>
@@ -346,7 +382,10 @@ function buildPage2(data, images) {
 // ─── PÁGINA 3 ─────────────────────────────────
 function buildPage3(data) {
   const gen = data.consideracionesGenerales || '';
-  const inc = data.inclusiones || '';
+  const inc = data.inclusiones;
+  const incHtml = Array.isArray(inc)
+    ? renderInclusionesStructured(inc)
+    : renderListText(inc || '');
   return `<div class="pdf-page" id="pdf-page-3">
     ${renderHeader()}
     <div class="body">
@@ -355,7 +394,7 @@ function buildPage3(data) {
       ${renderFreeText(gen)}
       <p class="st-sub" style="margin-top:10px;">Particulares:</p>
       <p style="font-family:Arial;font-size:9px;font-weight:700;color:#1A1A1A;margin:4px 0 6px 9px;">Inclusiones:</p>
-      ${renderListText(inc)}
+      ${incHtml}
     </div>
     ${renderFooter(3)}
   </div>`;
@@ -455,21 +494,30 @@ function buildPage5(data) {
 }
 
 // ─── buildPDFPreview ──────────────────────────
-function buildPDFPreview(data, images) {
-  const div = (label) => `<div style="height:18px;background:#EAEAEA;display:flex;align-items:center;justify-content:center;border-top:1.5px dashed #C8C8C8;border-bottom:1.5px dashed #C8C8C8;">
+// pageNum: 1–5 renders single page; 0 or omitted renders all pages
+function buildPDFPreview(data, images, pageNum) {
+  const wrap = (content) => `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"/>
+<style>${BASE_STYLES}</style></head><body>${content}</body></html>`;
+
+  if (pageNum && pageNum >= 1 && pageNum <= 5) {
+    const builders = [null, buildPage1, buildPage2, buildPage3, buildPage4, buildPage5];
+    const fn = builders[pageNum];
+    if (fn) return wrap(fn(data, images));
+  }
+
+  const sep = (label) => `<div style="height:18px;background:#EAEAEA;display:flex;align-items:center;justify-content:center;border-top:1.5px dashed #C8C8C8;border-bottom:1.5px dashed #C8C8C8;">
     <span style="font-size:8.5px;color:#AAAAAA;font-family:Arial;">— ${label} —</span></div>`;
-  return `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"/>
-<style>${BASE_STYLES}</style></head><body>
+
+  return wrap(`
 ${buildPage1(data)}
-${div('Página 2')}
+${sep('Página 2')}
 ${buildPage2(data, images)}
-${div('Página 3')}
+${sep('Página 3')}
 ${buildPage3(data)}
-${div('Página 4')}
+${sep('Página 4')}
 ${buildPage4(data)}
-${div('Página 5')}
-${buildPage5(data)}
-</body></html>`;
+${sep('Página 5')}
+${buildPage5(data)}`);
 }
 
 // ─── generateAndDownloadPDF ───────────────────

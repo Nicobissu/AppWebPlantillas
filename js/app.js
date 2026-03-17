@@ -91,6 +91,12 @@ class FormManager {
       plano3: null,
     };
 
+    // Inclusiones structured data
+    this.inclusiones = [];
+
+    // Current preview page (1–5)
+    this._currentPage = 1;
+
     // Debounce timer
     this._previewTimer = null;
 
@@ -117,6 +123,12 @@ class FormManager {
     // Textos predeterminados
     this._setDefaults();
 
+    // Composite document number input
+    this._initDocNumber();
+
+    // Structured inclusions UI
+    this._initInclusions();
+
     // Image file inputs
     this._initImageUpload('plano1', 'preview-plano1', 'upload-area-1');
     this._initImageUpload('plano2', 'preview-plano2', 'upload-area-2');
@@ -125,15 +137,173 @@ class FormManager {
     // Buttons
     this._initButtons();
 
+    // Page navigation
+    this._initPageNavigation();
+
     // Initial preview render
     this._schedulePreviewUpdate(50);
+  }
+
+  // ── Composite document number input ──────────
+  _initDocNumber() {
+    const prefijo = document.getElementById('num-prefijo');
+    const anio    = document.getElementById('num-anio');
+    const numero  = document.getElementById('num-numero');
+    const hidden  = document.getElementById('numero-cotizacion');
+    const preview = document.getElementById('num-preview');
+
+    if (!prefijo || !anio || !numero || !hidden) return;
+
+    // Set current year
+    const currentYear = new Date().getFullYear();
+    anio.value = currentYear;
+
+    const update = () => {
+      // Force uppercase letters only in prefix
+      const p = (prefijo.value || '').toUpperCase().replace(/[^A-Z]/g, '').slice(0, 2);
+      prefijo.value = p;
+      const n = (numero.value || '').trim();
+      // Combine into hidden field
+      if (n) {
+        hidden.value = `${p}-${currentYear}/${n}`;
+      } else {
+        hidden.value = '';
+      }
+      // Update preview label
+      if (preview) {
+        preview.textContent = `${p || 'AM'} — ${currentYear} / ${n || '0013'}`;
+      }
+    };
+
+    prefijo.addEventListener('input', () => { update(); this._schedulePreviewUpdate(); });
+    numero.addEventListener('input',  () => { update(); this._schedulePreviewUpdate(); });
+
+    update();
+  }
+
+  // ── Structured inclusiones UI ─────────────────
+  _defaultInclusionesData() {
+    return [
+      { label: 'Mov. de suelo',         estado: 'incluye',    descripcion: 'Retiro de suelo vegetal, relleno y compactación.' },
+      { label: 'Estructura',            estado: 'incluye',    descripcion: 'Platea, columnas, encadenados y vigas de hormigón armado.' },
+      { label: 'Muros',                 estado: 'incluye',    descripcion: 'Muros de Hormigón Sistema Constructivo AMZ.' },
+      { label: 'Tabiques interiores',   estado: 'incluye',    descripcion: 'Tabique de durlock con aislación.' },
+      { label: 'Techo',                 estado: 'incluye',    descripcion: 'Cubierta liviana con perfilería metálica, aislación y chapa color.' },
+      { label: 'Cielorraso',            estado: 'incluye',    descripcion: 'Cielorraso junta tomada con placas de yeso estándar pintado con latex color blanco.' },
+      { label: 'Inst. eléctrica',       estado: 'incluye',    descripcion: 'Instalación monofásica y cableado completo según instalación del proyecto. Tablero ppal. con térmicas y disyuntor. Pilar de luz y kit de conexión reglamentario.' },
+      { label: 'Inst. sanitaria',       estado: 'incluye',    descripcion: 'Inst. agua fría y caliente. Griferías FV en cocina, baño y lavadero. Losa sanitaria Roca. Bacha de acero inoxidable en cocina y lavadero. Vanitoir. Instalación cloacal y pluvial.' },
+      { label: 'Inst. gas',             estado: 'incluye',    descripcion: 'Instalación gas natural con aprobación de Litoral Gas.' },
+      { label: 'Pre-inst. Aires Ac.',   estado: 'incluye',    descripcion: '' },
+      { label: 'Revestimientos',        estado: 'incluye',    descripcion: 'Cerámico en paredes de cocina sobre mesada y en baños. Muros interiores en color blanco. Muros exteriores terminación material de frente.' },
+      { label: 'Pisos',                 estado: 'incluye',    descripcion: 'Pisos interiores porcelanato con zócalo incluido. Pisos exteriores: cerámico apto exterior.' },
+      { label: 'Aberturas',             estado: 'incluye',    descripcion: 'Puerta de ingreso: doble chapa inyectada galvanizada y pintada. Puertas interiores: puerta placa. Ventanas: Aluminio línea moderna, doble vidrio hermético DVH.' },
+      { label: 'Mobiliario',            estado: 'incluye',    descripcion: 'Amoblamiento de cocina color blanco bajo mesada y alacena con mesada de granito. Placard color blanco en dormitorio.' },
+      { label: 'Galería exterior',      estado: 'no-incluye', descripcion: '' },
+    ];
+  }
+
+  _initInclusions() {
+    const container = document.getElementById('inclusiones-ui');
+    if (!container) return;
+    this.inclusiones = this._defaultInclusionesData();
+    this._renderInclusionesUI(container);
+  }
+
+  _renderInclusionesUI(container) {
+    container.innerHTML = '';
+    this.inclusiones.forEach((item, idx) => {
+      const div = document.createElement('div');
+      div.className = 'inc-item' + (item.estado === 'no-incluye' ? ' estado-no' : '');
+      div.dataset.idx = idx;
+
+      const isIncluye = item.estado === 'incluye';
+      div.innerHTML = `
+        <div class="inc-item-header">
+          <span class="inc-item-label">${this._escHtml(item.label)}</span>
+          <div class="inc-toggle">
+            <button type="button" class="inc-btn inc-btn-si${isIncluye ? ' active' : ''}" data-action="incluye">Incluye</button>
+            <button type="button" class="inc-btn inc-btn-no${!isIncluye ? ' active' : ''}" data-action="no-incluye">No incluye</button>
+          </div>
+        </div>
+        <div class="inc-item-desc" style="display:${isIncluye ? 'block' : 'none'};">
+          <textarea class="form-textarea inc-desc-textarea" rows="2"
+            placeholder="Descripción de lo que incluye (opcional)...">${this._escHtml(item.descripcion)}</textarea>
+        </div>
+      `;
+      container.appendChild(div);
+
+      // Toggle buttons
+      div.querySelectorAll('.inc-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const action = btn.dataset.action;
+          this.inclusiones[idx].estado = action;
+          const si  = div.querySelector('.inc-btn-si');
+          const no  = div.querySelector('.inc-btn-no');
+          si.classList.toggle('active', action === 'incluye');
+          no.classList.toggle('active', action === 'no-incluye');
+          div.classList.toggle('estado-no', action === 'no-incluye');
+          div.querySelector('.inc-item-desc').style.display = action === 'incluye' ? 'block' : 'none';
+          this._schedulePreviewUpdate(150);
+        });
+      });
+
+      // Description textarea
+      const textarea = div.querySelector('.inc-desc-textarea');
+      if (textarea) {
+        textarea.addEventListener('input', () => {
+          this.inclusiones[idx].descripcion = textarea.value;
+          this._schedulePreviewUpdate(300);
+        });
+      }
+    });
+  }
+
+  _escHtml(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  // ── Page navigation ───────────────────────────
+  _initPageNavigation() {
+    const prevBtn = document.getElementById('prev-page');
+    const nextBtn = document.getElementById('next-page');
+    const tabs    = document.querySelectorAll('.page-tab');
+
+    if (!prevBtn || !nextBtn) return;
+
+    const updateNav = () => {
+      prevBtn.disabled = this._currentPage <= 1;
+      nextBtn.disabled = this._currentPage >= 5;
+      tabs.forEach(tab => {
+        tab.classList.toggle('active', parseInt(tab.dataset.page) === this._currentPage);
+      });
+      const display = document.getElementById('current-page-display');
+      if (display) display.textContent = this._currentPage;
+    };
+
+    prevBtn.addEventListener('click', () => {
+      if (this._currentPage > 1) { this._currentPage--; updateNav(); this._updatePreview(); }
+    });
+    nextBtn.addEventListener('click', () => {
+      if (this._currentPage < 5) { this._currentPage++; updateNav(); this._updatePreview(); }
+    });
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        this._currentPage = parseInt(tab.dataset.page);
+        updateNav();
+        this._updatePreview();
+      });
+    });
+
+    updateNav();
   }
 
   // ── Default textarea values (solo si están vacíos) ───
   _setDefaults() {
     const map = [
       ['consideraciones-generales', this._defaultGenerales()],
-      ['inclusiones',               this._defaultInclusiones()],
       ['exclusiones',               this._defaultExclusiones()],
     ];
     map.forEach(([id, text]) => {
@@ -147,7 +317,6 @@ class FormManager {
     const el = (id) => document.getElementById(id);
     [
       ['consideraciones-generales', this._defaultGenerales()],
-      ['inclusiones',               this._defaultInclusiones()],
       ['exclusiones',               this._defaultExclusiones()],
     ].forEach(([id, text]) => { if (el(id)) el(id).value = text; });
   }
@@ -159,24 +328,6 @@ class FormManager {
 - El presupuesto incluye la construcción conforme a los planos y especificaciones técnicas provistas. Cualquier ajuste en diseño respecto al proyecto cotizado podrá generar costos adicionales y afectar los plazos de entrega.
 - Los plazos indicados en este presupuesto pueden verse afectados por eventos fuera de nuestro control. La empresa se reserva el derecho de ajustar plazo de obra como consecuencia.
 - La obtención de permisos municipales, estudios de suelo, aprobaciones y otras gestiones administrativas son responsabilidad del cliente, salvo que se indique explícitamente lo contrario en el presupuesto.`;
-  }
-
-  _defaultInclusiones() {
-    return `- Mov. de suelo:\t\tRetiro de suelo vegetal, relleno y compactación.
-- Estructura:\t\tPlatea, columnas, encadenados y vigas de hormigón armado.
-- Muros:\t\t\tMuros de Hormigón Sistema Constructivo AMZ.
-- Tabiques interiores:\tTabique de durlock con aislación.
-- Techo:\t\t\tCubierta liviana con perfilería metálica, aislación y chapa color.
-- Cielorraso:\t\tCielorraso junta tomada con placas de yeso estándar pintado con latex color blanco.
-- Inst. eléctrica:\t\tInstalación monofásica y cableado completo según instalación del proyecto. Tablero ppal. con térmicas y disyuntor. Pilar de luz y kit de conexión reglamentario.
-- Inst. sanitaria:\t\tInst agua fría y caliente. Griferías FV en cocina, baño y lavadero. Losa sanitaria Roca. Bacha de acero inoxidable en cocina y lavadero. Vanitoir. Instalación cloacal y pluvial.
-- Inst. gas:\t\t\tInstalación gas natural con aprobación de Litoral Gas.
-- Pre-instalación Aires Acondicionados
-- Revestimientos:\t\tCerámico en paredes de cocina sobre mesada y en baños. Muros interiores en color blanco. Muros exteriores terminación material de frente.
-- Pisos:\t\t\tPisos interiores porcelanato con zócalo incluido. Pisos exteriores: cerámico apto exterior.
-- Aberturas:\t\tPuerta de ingreso: doble chapa inyectada galvanizada y pintada. Puertas interiores: puerta placa. Ventanas: Aluminio línea moderna, doble vidrio hermético DVH.
-- Mobiliario:\t\tAmoblamiento de cocina color blanco bajo mesada y alacena con mesada de granito. Placard color blanco en dormitorio.
-- Galería exterior:\t\tNo cotizada`;
   }
 
   _defaultExclusiones() {
@@ -352,7 +503,7 @@ No incluye este presupuesto lo no contemplado en el mismo y todo tipo de instala
       precioUsd:                val('precio-usd'),
       valorM2:                  val('valor-m2'),
       consideracionesGenerales: val('consideraciones-generales'),
-      inclusiones:              val('inclusiones'),
+      inclusiones:              this.inclusiones,
       exclusiones:              val('exclusiones'),
     };
   }
@@ -374,10 +525,7 @@ No incluye este presupuesto lo no contemplado en el mismo y todo tipo de instala
     const images = { ...this.images };
 
     try {
-      const htmlStr = buildPDFPreview(data, images);
-
-      // Extract just the body content from the full HTML string
-      // We'll render it as a srcdoc iframe for isolation
+      const htmlStr = buildPDFPreview(data, images, this._currentPage);
       this._renderPreviewIframe(htmlStr);
     } catch (err) {
       console.error('[Amazonia] Preview error:', err);
@@ -447,7 +595,20 @@ No incluye este presupuesto lo no contemplado en el mismo y todo tipo de instala
     };
 
     check('fecha', null);
-    check('numero-cotizacion', 'error-numero');
+
+    // Special validation: composite doc number — check num-numero visible field
+    const numNumero = document.getElementById('num-numero');
+    const numHidden = document.getElementById('numero-cotizacion');
+    const errNumero = document.getElementById('error-numero');
+    if (!numHidden || !numHidden.value.trim()) {
+      if (numNumero) numNumero.classList.add('error');
+      if (errNumero) errNumero.style.display = 'flex';
+      valid = false;
+    } else {
+      if (numNumero) numNumero.classList.remove('error');
+      if (errNumero) errNumero.style.display = 'none';
+    }
+
     check('apellido-nombre', 'error-nombre');
     check('superficie', 'error-superficie');
     check('precio-usd', 'error-precio');
@@ -554,6 +715,19 @@ No incluye este presupuesto lo no contemplado en el mismo y todo tipo de instala
 
     // Restore textarea defaults after form.reset() clears them
     this._restoreDefaults();
+
+    // Reset composite doc number
+    const numPrefijo = document.getElementById('num-prefijo');
+    const numNumero  = document.getElementById('num-numero');
+    const numHidden  = document.getElementById('numero-cotizacion');
+    const numPreview = document.getElementById('num-preview');
+    if (numPrefijo) numPrefijo.value = '';
+    if (numNumero)  numNumero.value  = '';
+    if (numHidden)  numHidden.value  = '';
+    if (numPreview) numPreview.textContent = `AM — ${new Date().getFullYear()} / 0013`;
+
+    // Reset inclusiones to defaults
+    this._initInclusions();
 
     // Clear all images
     this.images = {
