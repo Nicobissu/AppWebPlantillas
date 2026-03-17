@@ -155,6 +155,7 @@ body{font-family:Arial,Helvetica,sans-serif;background:#fff;}
   padding:3.5px 10px;color:#1A1A1A;
   border:0.5px solid #D0D8E8;
   vertical-align:middle;
+  word-break:break-word;overflow-wrap:break-word;
 }
 .ct .cl{font-weight:700;color:#1C3A5C;background:#F4F6FA;width:170px;}
 
@@ -253,13 +254,6 @@ function renderFooter(n) {
     <div class="fc"><span class="ft">Contáctanos:</span>comercial@amazoniaamz.com<br/>341-521-7974</div>
     <div class="fc"><span class="ft">&nbsp;</span>Av. San Lorenzo 2669,<br/>C. Bermúdez · Santa Fe, Arg.</div>
     <div class="ftr-end">
-      <div class="ftr-circle">
-        <svg viewBox="0 0 34 34" width="24" height="24" xmlns="http://www.w3.org/2000/svg">
-          <line x1="5" y1="9"  x2="29" y2="9"  stroke="white" stroke-width="2.8" stroke-linecap="round"/>
-          <line x1="5" y1="17" x2="29" y2="17" stroke="white" stroke-width="2.8" stroke-linecap="round"/>
-          <line x1="5" y1="25" x2="29" y2="25" stroke="white" stroke-width="2.8" stroke-linecap="round"/>
-        </svg>
-      </div>
       <span class="ftr-pg">${n}</span>
     </div>
   </div>`;
@@ -541,12 +535,12 @@ async function generateAndDownloadPDF(data, images) {
     try {
       const el = iDoc.querySelector('.pdf-page') || iDoc.body;
       const canvas = await html2canvas(el, {
-        scale: 3, useCORS: true, allowTaint: true,
+        scale: 4, useCORS: true, allowTaint: true,
         backgroundColor: '#FFFFFF', width: 794, height: 1123,
         windowWidth: 794, logging: false, imageTimeout: 20000,
       });
       if (i > 0) pdf.addPage();
-      pdf.addImage(canvas.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, 210, 297);
+      pdf.addImage(canvas.toDataURL('image/jpeg', 1.0), 'JPEG', 0, 0, 210, 297);
     } finally {
       document.body.removeChild(iframe);
     }

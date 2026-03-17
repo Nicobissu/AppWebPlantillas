@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find e:UsuarioDocumentsGitHubAppWebPlantillas -type f -name *.html -o -name *.js -o -name *.ts -o -name *.json)"
+    ]
+  }
+}
