@@ -20,17 +20,18 @@
     <div class="max-w-screen-2xl mx-auto px-6 py-3 flex items-center justify-between">
       <a href="index.html" class="flex items-center gap-3 nav-logo">
         <!-- AMZ Logomark -->
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 290 100" width="107" height="37">
-          <!-- A: dos barras "/" con gap = ancho de barra -->
-          <polygon points="0,100 26,100 51,0 25,0" fill="white"/>
-          <polygon points="52,100 78,100 103,0 77,0" fill="white"/>
-          <!-- M: dos barras "/" mismas proporciones -->
-          <polygon points="100,100 126,100 151,0 125,0" fill="white"/>
-          <polygon points="152,100 178,100 203,0 177,0" fill="white"/>
-          <!-- Z: barra superior + diagonal \ + barra inferior -->
-          <polygon points="208,0 288,0 288,28 208,28" fill="white"/>
-          <polygon points="288,28 288,56 208,72 208,44" fill="white"/>
-          <polygon points="208,72 288,72 288,100 208,100" fill="white"/>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 318 100" width="118" height="37">
+          <!-- A: diagonal "/" (W=22, lean=35) + recta vertical "|" (3px gap cima) -->
+          <polygon points="0,100 22,100 57,0 35,0" fill="white"/>
+          <polygon points="60,100 82,100 82,0 60,0" fill="white"/>
+          <!-- M: diagonal + diagonal + recta vertical (3px gap entre cada una) -->
+          <polygon points="98,100 120,100 155,0 133,0" fill="white"/>
+          <polygon points="123,100 145,100 180,0 158,0" fill="white"/>
+          <polygon points="183,100 205,100 205,0 183,0" fill="white"/>
+          <!-- Z: 3 elementos de igual peso visual (95px ancho, 27px cada barra) -->
+          <polygon points="221,0 316,0 316,27 221,27" fill="white"/>
+          <polygon points="316,27 316,54 221,73 221,46" fill="white"/>
+          <polygon points="221,73 316,73 316,100 221,100" fill="white"/>
         </svg>
         <div>
           <div class="nav-brand-text">AMAZONÍA</div>
@@ -44,6 +45,8 @@
           </svg>
           Inicio
         </a>
+        <span class="text-white/20">|</span>
+        <a href="documentos.html" class="text-white/70 hover:text-white text-sm transition-colors">Documentos</a>
         <span class="text-white/20">|</span>
         <span class="text-white/90 text-sm font-medium">Cotización</span>
       </div>

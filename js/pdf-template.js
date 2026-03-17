@@ -239,21 +239,7 @@ function renderHeader() {
       <polygon points="276,82 310,82 310,64" fill="#2B5280" opacity="0.5"/>
     </svg>
     <div class="hdr-logo">
-      <svg class="amz-mark" viewBox="0 0 290 100" width="116" height="40" xmlns="http://www.w3.org/2000/svg">
-        <!-- A: dos barras "/" con gap = ancho de barra -->
-        <polygon points="0,100 26,100 51,0 25,0" fill="#1C3A5C"/>
-        <polygon points="52,100 78,100 103,0 77,0" fill="#1C3A5C"/>
-        <!-- M: dos barras "/" mismas proporciones -->
-        <polygon points="100,100 126,100 151,0 125,0" fill="#1C3A5C"/>
-        <polygon points="152,100 178,100 203,0 177,0" fill="#1C3A5C"/>
-        <!-- Z: barra superior + diagonal \ + barra inferior -->
-        <polygon points="208,0 288,0 288,28 208,28" fill="#1C3A5C"/>
-        <polygon points="288,28 288,56 208,72 208,44" fill="#1C3A5C"/>
-        <polygon points="208,72 288,72 288,100 208,100" fill="#1C3A5C"/>
-      </svg>
-      <div class="amz-rule"></div>
-      <div class="amz-name">AMAZONÍA</div>
-      <div class="amz-sub">Construcción Industrializada</div>
+      <img src="assets/logo-amazonia.png" style="height:72px;width:auto;display:block;object-fit:contain;" crossorigin="anonymous" />
     </div>
     <div class="hdr-cot">Cotización</div>
   </div>`;

@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Documentos Automatizados — Amazonia Construcción</title>
+  <link rel="icon" type="image/svg+xml" href="assets/logo.svg" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="css/styles.css" />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+    body { font-family: 'Inter', system-ui, sans-serif; }
+
+    /* ── Grid de tarjetas ── */
+    .docs-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+      gap: 14px;
+    }
+
+    /* ── Tarjeta base ── */
+    .doc-card-sq {
+      aspect-ratio: 1 / 1;
+      border-radius: 12px;
+      border: 1.5px solid #E2E8F0;
+      background: #fff;
+      display: flex;
+      flex-direction: column;
+      padding: 18px 16px 14px;
+      position: relative;
+      overflow: hidden;
+      transition: box-shadow 0.18s, transform 0.18s, border-color 0.18s;
+    }
+
+    /* Barra de color superior (categoría) */
+    .doc-card-sq::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 4px;
+      background: var(--cat-color, #E2E8F0);
+    }
+
+    /* Disponible */
+    .doc-card-sq.available {
+      cursor: pointer;
+      border-color: var(--cat-color, #E2E8F0);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+    .doc-card-sq.available:hover {
+      box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+      transform: translateY(-2px);
+      border-color: var(--cat-color);
+    }
+
+    /* No disponible */
+    .doc-card-sq.unavailable {
+      opacity: 0.38;
+      cursor: default;
+      filter: grayscale(0.4);
+    }
+
+    /* ── Ícono de categoría ── */
+    .cat-icon {
+      width: 36px; height: 36px;
+      border-radius: 8px;
+      background: var(--cat-color-light, #F3F4F6);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 10px;
+      flex-shrink: 0;
+    }
+    .cat-icon svg { color: var(--cat-color, #6B7280); }
+
+    /* ── Texto de la tarjeta ── */
+    .card-title {
+      font-size: 12.5px;
+      font-weight: 700;
+      color: #1A1A1A;
+      line-height: 1.35;
+      margin-bottom: 5px;
+      flex-grow: 0;
+    }
+    .card-desc {
+      font-size: 10.5px;
+      color: #6B7280;
+      line-height: 1.5;
+      flex-grow: 1;
+    }
+
+    /* ── Chips de campos ── */
+    .chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 10px; }
+    .chip {
+      font-size: 9px; font-weight: 500;
+      background: #F3F4F6; color: #6B7280;
+      border-radius: 4px; padding: 2px 6px;
+      white-space: nowrap;
+    }
+    .available .chip {
+      background: var(--cat-color-light);
+      color: var(--cat-color);
+    }
+
+    /* ── Badge disponible ── */
+    .badge-disponible {
+      position: absolute;
+      bottom: 12px; right: 12px;
+      font-size: 9px; font-weight: 700;
+      background: var(--cat-color);
+      color: #fff;
+      border-radius: 6px;
+      padding: 3px 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* ── Filtros ── */
+    .filter-btn {
+      display: inline-flex; align-items: center; gap-6px;
+      font-size: 11px; font-weight: 600;
+      padding: 5px 12px;
+      border-radius: 8px;
+      border: 1.5px solid #E2E8F0;
+      background: #fff;
+      color: #6B7280;
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+      gap: 6px;
+    }
+    .filter-btn:hover { border-color: #9CA3AF; color: #374151; }
+    .filter-btn.active {
+      border-color: var(--btn-color, #1B4332);
+      background: var(--btn-color, #1B4332);
+      color: #fff;
+    }
+
+    /* ── Buscador ── */
+    .search-box {
+      border: 1.5px solid #E2E8F0;
+      border-radius: 8px;
+      padding: 7px 12px 7px 36px;
+      font-size: 13px;
+      color: #374151;
+      background: #fff;
+      outline: none;
+      width: 100%;
+      max-width: 260px;
+      transition: border-color 0.15s;
+    }
+    .search-box:focus { border-color: #1B4332; }
+
+    /* Oculto por filtro */
+    .doc-card-sq.hidden-filter { display: none; }
+  </style>
+</head>
+<body class="bg-[#F8F5F0]">
+
+  <!-- NAVBAR -->
+  <nav class="amazonia-navbar">
+    <div class="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
+      <a href="index.html" class="flex items-center gap-3 nav-logo">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 318 100" width="118" height="37">
+          <polygon points="0,100 22,100 57,0 35,0" fill="white"/>
+          <polygon points="60,100 82,100 82,0 60,0" fill="white"/>
+          <polygon points="98,100 120,100 155,0 133,0" fill="white"/>
+          <polygon points="123,100 145,100 180,0 158,0" fill="white"/>
+          <polygon points="183,100 205,100 205,0 183,0" fill="white"/>
+          <polygon points="221,0 316,0 316,27 221,27" fill="white"/>
+          <polygon points="316,27 316,54 221,73 221,46" fill="white"/>
+          <polygon points="221,73 316,73 316,100 221,100" fill="white"/>
+        </svg>
+        <div>
+          <div class="nav-brand-text">AMAZONÍA</div>
+          <div class="nav-brand-sub">Construcción Industrializada</div>
+        </div>
+      </a>
+      <div class="flex items-center gap-4 text-sm">
+        <a href="index.html" class="text-white/70 hover:text-white transition-colors flex items-center gap-1.5">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+          </svg>
+          Inicio
+        </a>
+        <span class="text-white/20">|</span>
+        <span class="text-white/90 font-medium">Documentos</span>
+        <span class="text-white/20">|</span>
+        <a href="ficha-tecnica.html" class="text-white/70 hover:text-white transition-colors">Cotización</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- PAGE HEADER -->
+  <div class="bg-white border-b border-[#E2E8F0]">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <div>
+        <p class="text-xs text-[#9CA3AF] mb-0.5">Sistema de Gestión · Hoja de ruta documental</p>
+        <h1 class="text-lg font-semibold text-[#1B4332]">Documentos Automatizados</h1>
+      </div>
+      <p class="text-xs text-[#6B7280] max-w-sm leading-relaxed">
+        Cada tarjeta es un documento estandarizado que el equipo completa con datos y el sistema genera el PDF listo para usar.
+      </p>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <main class="max-w-7xl mx-auto px-6 py-8">
+
+    <!-- Barra de filtros -->
+    <div class="flex flex-wrap items-center gap-3 mb-8">
+
+      <!-- Buscador -->
+      <div class="relative">
+        <svg class="w-4 h-4 text-[#9CA3AF] absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg>
+        <input type="text" id="search-input" class="search-box" placeholder="Buscar documento…" />
+      </div>
+
+      <div class="w-px h-6 bg-[#E2E8F0] hidden sm:block"></div>
+
+      <!-- Botones de categoría -->
+      <div class="flex flex-wrap gap-2" id="filter-buttons">
+        <button class="filter-btn active" data-cat="all" style="--btn-color:#374151">Todos</button>
+        <button class="filter-btn" data-cat="comercial"   style="--btn-color:#1B4332">
+          <span class="w-2 h-2 rounded-full bg-[#1B4332] inline-block"></span> Comercial
+        </button>
+        <button class="filter-btn" data-cat="contractual" style="--btn-color:#1C3A5C">
+          <span class="w-2 h-2 rounded-full bg-[#1C3A5C] inline-block"></span> Contractual
+        </button>
+        <button class="filter-btn" data-cat="planificacion" style="--btn-color:#7C3AED">
+          <span class="w-2 h-2 rounded-full bg-[#7C3AED] inline-block"></span> Planificación
+        </button>
+        <button class="filter-btn" data-cat="ejecucion"  style="--btn-color:#B45309">
+          <span class="w-2 h-2 rounded-full bg-[#B45309] inline-block"></span> Ejecución
+        </button>
+        <button class="filter-btn" data-cat="calidad"    style="--btn-color:#0E7490">
+          <span class="w-2 h-2 rounded-full bg-[#0E7490] inline-block"></span> Calidad
+        </button>
+        <button class="filter-btn" data-cat="seguridad"  style="--btn-color:#B91C1C">
+          <span class="w-2 h-2 rounded-full bg-[#B91C1C] inline-block"></span> Seguridad
+        </button>
+        <button class="filter-btn" data-cat="logistica"  style="--btn-color:#0369A1">
+          <span class="w-2 h-2 rounded-full bg-[#0369A1] inline-block"></span> Logística
+        </button>
+        <button class="filter-btn" data-cat="entrega"    style="--btn-color:#065F46">
+          <span class="w-2 h-2 rounded-full bg-[#065F46] inline-block"></span> Entrega
+        </button>
+        <button class="filter-btn" data-cat="postobra"   style="--btn-color:#4B5563">
+          <span class="w-2 h-2 rounded-full bg-[#4B5563] inline-block"></span> Post-Obra
+        </button>
+      </div>
+    </div>
+
+    <!-- Grid de tarjetas -->
+    <div class="docs-grid" id="docs-grid">
+
+      <!-- ══════════════ COMERCIAL ══════════════ -->
+      <a href="ficha-tecnica.html"
+         class="doc-card-sq available"
+         data-cat="comercial" data-name="cotización de obra"
+         style="--cat-color:#1B4332; --cat-color-light:#DCFCE7;">
+        <div class="cat-icon">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+        </div>
+        <p class="card-title">Cotización de Obra</p>
+        <p class="card-desc">Propuesta comercial completa. 5 páginas PDF A4.</p>
+        <div class="chips">
+          <span class="chip">Cliente</span>
+          <span class="chip">Propuesta</span>
+          <span class="chip">Planos</span>
+          <span class="chip">Oferta USD</span>
+        </div>
+        <span class="badge-disponible">Disponible</span>
+      </a>
+
+      <div class="doc-card-sq unavailable" data-cat="comercial" data-name="presupuesto detallado"
+           style="--cat-color:#1B4332; --cat-color-light:#DCFCE7;">
+        <div class="cat-icon">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 11h.01M12 11h.01M15 11h.01M4 19h16a2 2 0 002-2V7a2 2 0 00-2-2H4a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+          </svg>
+        </div>
+        <p class="card-title">Presupuesto Detallado</p>
+        <p class="card-desc">Desglose por capítulos con precios unitarios y totales.</p>
+        <div class="chips">
+          <span class="chip">Ítems</span>
+          <span class="chip">Cantidades</span>
+          <span class="chip">APU</span>
+          <span class="chip">Totales</span>
+        </div>
+      </div>
+
+      <div class="doc-card-sq unavailable" data-cat="comercial" data-name="análisis de costos"
+           style="--cat-color:#1B4332; --cat-color-light:#DCFCE7;">
+        <div class="cat-icon">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+          </svg>
+        </div>
+        <p class="card-title">Análisis de Costos</p>
+        <p class="card-desc">Comparativo costo real vs presupuestado por rubro.</p>
+        <div class="chips">
+          <span class="chip">Rubro</span>
+          <span class="chip">Presupuesto</span>
+          <span class="chip">Real</span>
+          <span class="chip">Variación</span>
+        </div>
+      </div>
+
+      <!-- ══════════════ CONTRACTUAL ══════════════ -->
+      <div class="doc-card-sq unavailable" data-cat="contractual" data-name="contrato de obra"
+           style="--cat-color:#1C3A5C; --cat-color-light:#DBEAFE;">
+        <div class="cat-icon">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+        </div>
+        <p class="card-title">Contrato de Obra</p>
+        <p class="card-desc">Contrato estándar vinculado a la cotización aprobada.</p>
+        <div class="chips">
+          <span class="chip">Partes</span>
+          <span class="chip">Objeto</span>
+          <span class="chip">Plazo</span>
+          <span class="chip">Firmas</span>
+        </div>
+      </div>
+
+      <div class="doc-card-sq unavailable" data-cat="contractual" data-name="addendum solicitud de cambio"
+           style="--cat-color:#1C3A5C; --cat-color-light:#DBEAFE;">
+        <div class="cat-icon">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+          </svg>
+        </div>
+        <p class="card-title">Addendum / Cambio de Alcance</p>
+        <p class="card-desc">Modificación formal al contrato original con impacto en costo y plazo.</p>
+        <div class="chips">
+          <span class="chip">Contrato</span>
+          <span class="chip">Cambio</span>
+          <span class="chip">Costo adicional</span>
+          <span class="chip">Firmas</span>
+        </div>
+      </div>
+
+      <div class="doc-card-sq unavailable" data-cat="contractual" data-name="acta de inicio de obra"
+           style="--cat-color:#1C3A5C; --cat-color-light:#DBEAFE;">
+        <div class="cat-icon">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+          </svg>
+        </div>
+        <p class="card-title">Acta de Inicio de Obra</p>
+        <p class="card-desc">Formaliza el comienzo con fechas, responsables y condiciones previas.</p>
+        <div class="chips">
+          <span class="chip">Fecha inicio</span>
+          <span class="chip">Responsable</span>
+          <span class="chip">Condiciones</span>
+          <span class="chip">Firmas</span>
+        </div>
+      </div>
+
+      <!-- ══════════════ PLANIFICACIÓN ══════════════ -->
+      <div class="doc-card-sq unavailable" data-cat="planificacion" data-name="cronograma de obra"
+           style="--cat-color:#7C3AED; --cat-color-light:#EDE9FE;">
+        <div class="cat-icon">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+          </svg>
+        </div>
+        <p class="card-title">Cronograma de Obra</p>
+        <p class="card-desc">Diagrama de etapas con fechas planificadas y responsables por tarea.</p>
+        <div class="chips">
+          <span class="chip">Etapas</span>
+          <span class="chip">Fechas</span>
+          <span class="chip">Responsables</span>
+          <span class="chip">Hitos</span>
+        </div>
+      </div>
+
+      <div class="doc-card-sq unavailable" data-cat="planificacion" data-name="plan de trabajo semanal"
+           style="--cat-color:#7C3AED; --cat-color-light:#EDE9FE;">
+        <div class="cat-icon">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
+          </svg>
+        </div>
+        <p class="card-title">Plan de Trabajo Semanal</p>
+        <p class="card-desc">Planificación de actividades y cuadrillas para la semana de obra.</p>
+        <div class="chips">
+          <span class="chip">Semana</span>
+          <span class="chip">Actividades</span>
+          <span class="chip">Cuadrilla</span>
+          <span class="chip">Materiales</span>
+        </div>
+      </div>
+
+      <!-- ══════════════ EJECUCIÓN ══════════════ -->
+      <div class="doc-card-sq unavailable" data-cat="ejecucion" data-name="informe de avance"
+           style="--cat-color:#B45309; --cat-color-light:#FEF3C7;">
+        <div class="cat-icon">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+          </svg>
+        </div>
+        <p class="card-title">Informe de Avance</p>
+        <p class="card-desc">Reporte periódico con porcentaje de avance, fotos y cronograma.</p>
+        <div class="chips">
+          <span class="chip">% Avance</span>
+          <span class="chip">Fotos</span>
+          <span class="chip">Cronograma</span>
+          <span class="chip">Observaciones</span>
+        </div>
+      </div>
+
+      <div class="doc-card-sq unavailable" data-cat="ejecucion" data-name="parte diario de obra"
+           style="--cat-color:#B45309; --cat-color-light:#FEF3C7;">
+        <div class="cat-icon">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+        <p class="card-title">Parte Diario de Obra</p>
+        <p class="card-desc">Registro de actividades, personal y novedades de cada jornada.</p>
+        <div class="chips">
+          <span class="chip">Fecha</span>
+          <span class="chip">Actividades</span>
+          <span class="chip">Personal</span>
+          <span class="chip">Novedades</span>
+        </div>
+      </div>
+
+      <div class="doc-card-sq unavailable" data-cat="ejecucion" data-name="registro de visita de obra"
+           style="--cat-color:#B45309; --cat-color-light:#FEF3C7;">
+        <div class="cat-icon">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+          </svg>
+        </div>
+        <p class="card-title">Registro de Visita de Obra</p>
+        <p class="card-desc">Acta de visita con indicaciones del director de obra o inspector.</p>
+        <div class="chips">
+          <span class="chip">Visitante</span>
+          <span class="chip">Observaciones</span>
+          <span class="chip">Compromisos</span>
+          <span class="chip">Firma</span>
+        </div>
+      </div>
+
+      <!-- ══════════════ CALIDAD ══════════════ -->
+      <div class="doc-card-sq unavailable" data-cat="calidad" data-name="procedimiento de trabajo"
+           style="--cat-color:#0E7490; --cat-color-light:#CFFAFE;">
+        <div class="cat-icon">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
+          </svg>
+        </div>
+        <p class="card-title">Procedimiento de Trabajo</p>
+        <p class="card-desc">Proceso estandarizado con entradas, pasos, salidas y KPIs.</p>
+        <div class="chips">
+          <span class="chip">Responsable</span>
+          <span class="chip">Entradas</span>
+          <span class="chip">Proceso</span>
+          <span class="chip">Salidas</span>
+          <span class="chip">KPIs</span>
+        </div>
+      </div>
+
+      <div class="doc-card-sq unavailable" data-cat="calidad" data-name="checklist control de calidad"
+           style="--cat-color:#0E7490; --cat-color-light:#CFFAFE;">
+        <div class="cat-icon">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+          </svg>
+        </div>
+        <p class="card-title">Checklist de Calidad</p>
+        <p class="card-desc">Lista de verificación por etapa de obra con resultado y firma.</p>
+        <div class="chips">
+          <span class="chip">Etapa</span>
+          <span class="chip">Ítems</span>
+          <span class="chip">Resultado</span>
+          <span class="chip">Firma</span>
+        </div>
+      </div>
+
+      <div class="doc-card-sq unavailable" data-cat="calidad" data-name="reporte de no conformidad"
+           style="--cat-color:#0E7490; --cat-color-light:#CFFAFE;">
+        <div class="cat-icon">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+          </svg>
+        </div>
+        <p class="card-title">Reporte de No Conformidad</p>
+        <p class="card-desc">Registro formal de desvíos con causa, acción correctiva y seguimiento.</p>
+        <div class="chips">
+          <span class="chip">Desvío</span>
+          <span class="chip">Causa</span>
+          <span class="chip">Acción correctiva</span>
+          <span class="chip">Responsable</span>
+        </div>
+      </div>
+
+      <!-- ══════════════ SEGURIDAD ══════════════ -->
+      <div class="doc-card-sq unavailable" data-cat="seguridad" data-name="análisis de riesgo art"
+           style="--cat-color:#B91C1C; --cat-color-light:#FEE2E2;">
+        <div class="cat-icon">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+          </svg>
+        </div>
+        <p class="card-title">Análisis de Riesgo (ART)</p>
+        <p class="card-desc">Identificación de peligros y medidas preventivas antes de iniciar tarea.</p>
+        <div class="chips">
+          <span class="chip">Tarea</span>
+          <span class="chip">Peligros</span>
+          <span class="chip">EPP</span>
+          <span class="chip">Firmas</span>
+        </div>
+      </div>
+
+      <div class="doc-card-sq unavailable" data-cat="seguridad" data-name="procedimiento trabajo seguro"
+           style="--cat-color:#B91C1C; --cat-color-light:#FEE2E2;">
+        <div class="cat-icon">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+          </svg>
+        </div>
+        <p class="card-title">Procedimiento Trabajo Seguro</p>
+        <p class="card-desc">Instrucción paso a paso para ejecución segura de tareas de alto riesgo.</p>
+        <div class="chips">
+          <span class="chip">Tarea</span>
+          <span class="chip">Pasos</span>
+          <span class="chip">EPP requerido</span>
+          <span class="chip">Responsable</span>
+        </div>
+      </div>
+
+      <div class="doc-card-sq unavailable" data-cat="seguridad" data-name="registro de incidente"
+           style="--cat-color:#B91C1C; --cat-color-light:#FEE2E2;">
+        <div class="cat-icon">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+        <p class="card-title">Registro de Incidente</p>
+        <p class="card-desc">Documentación de accidentes o incidentes con causa raíz y acciones.</p>
+        <div class="chips">
+          <span class="chip">Fecha</span>
+          <span class="chip">Descripción</span>
+          <span class="chip">Causa raíz</span>
+          <span class="chip">Acción</span>
+        </div>
+      </div>
+
+      <!-- ══════════════ LOGÍSTICA ══════════════ -->
+      <div class="doc-card-sq unavailable" data-cat="logistica" data-name="orden de compra"
+           style="--cat-color:#0369A1; --cat-color-light:#DBEAFE;">
+        <div class="cat-icon">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+          </svg>
+        </div>
+        <p class="card-title">Orden de Compra</p>
+        <p class="card-desc">Pedido formal de materiales a proveedor con especificaciones y condiciones.</p>
+        <div class="chips">
+          <span class="chip">Proveedor</span>
+          <span class="chip">Ítems</span>
+          <span class="chip">Cantidades</span>
+          <span class="chip">Entrega</span>
+        </div>
+      </div>
+
+      <div class="doc-card-sq unavailable" data-cat="logistica" data-name="remito de materiales"
+           style="--cat-color:#0369A1; --cat-color-light:#DBEAFE;">
+        <div class="cat-icon">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+          </svg>
+        </div>
+        <p class="card-title">Remito de Materiales</p>
+        <p class="card-desc">Comprobante de entrega de materiales en obra con detalle y firma de recepción.</p>
+        <div class="chips">
+          <span class="chip">Materiales</span>
+          <span class="chip">Cantidades</span>
+          <span class="chip">Obra destino</span>
+          <span class="chip">Recepción</span>
+        </div>
+      </div>
+
+      <div class="doc-card-sq unavailable" data-cat="logistica" data-name="planilla de personal"
+           style="--cat-color:#0369A1; --cat-color-light:#DBEAFE;">
+        <div class="cat-icon">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+        </div>
+        <p class="card-title">Planilla de Personal en Obra</p>
+        <p class="card-desc">Asistencia y horas trabajadas por cuadrilla en cada jornada.</p>
+        <div class="chips">
+          <span class="chip">Jornada</span>
+          <span class="chip">Personal</span>
+          <span class="chip">Horas</span>
+          <span class="chip">Tarea</span>
+        </div>
+      </div>
+
+      <!-- ══════════════ ENTREGA ══════════════ -->
+      <div class="doc-card-sq unavailable" data-cat="entrega" data-name="acta de entrega final"
+           style="--cat-color:#065F46; --cat-color-light:#D1FAE5;">
+        <div class="cat-icon">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+          </svg>
+        </div>
+        <p class="card-title">Acta de Entrega Final</p>
+        <p class="card-desc">Entrega formal de la obra con inventario, conformidad y firmas.</p>
+        <div class="chips">
+          <span class="chip">Entregables</span>
+          <span class="chip">Observaciones</span>
+          <span class="chip">Conformidad</span>
+          <span class="chip">Firmas</span>
+        </div>
+      </div>
+
+      <div class="doc-card-sq unavailable" data-cat="entrega" data-name="lista de pendientes punch list"
+           style="--cat-color:#065F46; --cat-color-light:#D1FAE5;">
+        <div class="cat-icon">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h7"/>
+          </svg>
+        </div>
+        <p class="card-title">Lista de Pendientes (Punch List)</p>
+        <p class="card-desc">Ítems observados en la pre-entrega con responsable y fecha de resolución.</p>
+        <div class="chips">
+          <span class="chip">Ítem</span>
+          <span class="chip">Ubicación</span>
+          <span class="chip">Responsable</span>
+          <span class="chip">Fecha límite</span>
+        </div>
+      </div>
+
+      <!-- ══════════════ POST-OBRA ══════════════ -->
+      <div class="doc-card-sq unavailable" data-cat="postobra" data-name="certificado de garantía"
+           style="--cat-color:#4B5563; --cat-color-light:#F3F4F6;">
+        <div class="cat-icon">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
+          </svg>
+        </div>
+        <p class="card-title">Certificado de Garantía</p>
+        <p class="card-desc">Garantía post-entrega con cobertura, vigencia y exclusiones.</p>
+        <div class="chips">
+          <span class="chip">Cliente</span>
+          <span class="chip">Vigencia</span>
+          <span class="chip">Cobertura</span>
+          <span class="chip">Exclusiones</span>
+        </div>
+      </div>
+
+      <div class="doc-card-sq unavailable" data-cat="postobra" data-name="solicitud de servicio técnico"
+           style="--cat-color:#4B5563; --cat-color-light:#F3F4F6;">
+        <div class="cat-icon">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+        </div>
+        <p class="card-title">Solicitud de Servicio Técnico</p>
+        <p class="card-desc">Registro de reclamo post-entrega con diagnóstico y resolución.</p>
+        <div class="chips">
+          <span class="chip">Cliente</span>
+          <span class="chip">Reclamo</span>
+          <span class="chip">Diagnóstico</span>
+          <span class="chip">Resolución</span>
+        </div>
+      </div>
+
+    </div><!-- /grid -->
+
+    <!-- Mensaje sin resultados -->
+    <div id="no-results" class="hidden text-center py-16 text-[#9CA3AF] text-sm">
+      No se encontraron documentos para esa búsqueda.
+    </div>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="border-t border-[#E2E8F0] bg-white mt-10">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+      <p class="text-xs text-[#9CA3AF]">Sistema de Gestión Documental · Amazonia Construcción · Uso interno</p>
+      <p class="text-xs text-[#9CA3AF]">v1.0 · 2025</p>
+    </div>
+  </footer>
+
+  <script>
+    const cards = document.querySelectorAll('.doc-card-sq');
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    const searchInput = document.getElementById('search-input');
+    const noResults = document.getElementById('no-results');
+    let activeCat = 'all';
+
+    function applyFilters() {
+      const q = searchInput.value.toLowerCase().trim();
+      let visible = 0;
+      cards.forEach(card => {
+        const cat = card.dataset.cat;
+        const name = card.dataset.name || '';
+        const matchCat  = activeCat === 'all' || cat === activeCat;
+        const matchSearch = !q || name.includes(q);
+        if (matchCat && matchSearch) {
+          card.classList.remove('hidden-filter');
+          visible++;
+        } else {
+          card.classList.add('hidden-filter');
+        }
+      });
+      noResults.classList.toggle('hidden', visible > 0);
+    }
+
+    filterBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        filterBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        activeCat = btn.dataset.cat;
+        applyFilters();
+      });
+    });
+
+    searchInput.addEventListener('input', applyFilters);
+  </script>
+
+</body>
+</html>
