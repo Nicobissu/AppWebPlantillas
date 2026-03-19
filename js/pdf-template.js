@@ -437,8 +437,8 @@ function buildPage5(data) {
         </div>`}
       </div>
 
-      <p class="bp-i">Referencia para el cliente: Valor por m²&nbsp;&nbsp;&nbsp;USD&nbsp;&nbsp;&nbsp;${valM2}</p>
-      <p class="bp-sm">Este valor constituye una referencia orientativa para la propuesta presentada y podrá variar según ajustes de diseño, definición final de terminaciones, condiciones del terreno y alcance definitivo de obra.</p>
+      ${data.valorM2 ? `<p class="bp-i">Referencia para el cliente: Valor por m²&nbsp;&nbsp;&nbsp;USD&nbsp;&nbsp;&nbsp;${valM2}</p>
+      <p class="bp-sm">Este valor constituye una referencia orientativa para la propuesta presentada y podrá variar según ajustes de diseño, definición final de terminaciones, condiciones del terreno y alcance definitivo de obra.</p>` : ''}
 
       <p class="st">Forma de pago:</p>
       ${renderFreeText(data.formaPago || 'Opción 1: pago contado. Bonificación del 5% sobre el valor final.\nOpción 2: Anticipo 40%, saldo por avances durante el plazo de ejecución de la obra.\nOpción financiación: consultar condiciones.')}
