@@ -140,6 +140,9 @@ class FormManager {
     // Page navigation
     this._initPageNavigation();
 
+    // Fullscreen preview
+    this._initFullscreen();
+
     // Initial preview render
     this._schedulePreviewUpdate(50);
   }
@@ -211,7 +214,10 @@ class FormManager {
 
   _renderInclusionesUI(container) {
     container.innerHTML = '';
+    const defaultCount = this._defaultInclusionesData().length;
+
     this.inclusiones.forEach((item, idx) => {
+      const isCustom = idx >= defaultCount;
       const div = document.createElement('div');
       div.className = 'inc-item' + (item.estado === 'no-incluye' ? ' estado-no' : '');
       div.dataset.idx = idx;
@@ -219,10 +225,14 @@ class FormManager {
       const isIncluye = item.estado === 'incluye';
       div.innerHTML = `
         <div class="inc-item-header">
-          <span class="inc-item-label">${this._escHtml(item.label)}</span>
-          <div class="inc-toggle">
+          ${isCustom
+            ? `<input type="text" class="inc-label-input form-input" value="${this._escHtml(item.label)}" placeholder="Nombre de la inclusión…" style="font-size:12px;font-weight:600;padding:3px 6px;height:auto;flex:1;min-width:0;" />`
+            : `<span class="inc-item-label">${this._escHtml(item.label)}</span>`
+          }
+          <div class="inc-toggle" style="flex-shrink:0;">
             <button type="button" class="inc-btn inc-btn-si${isIncluye ? ' active' : ''}" data-action="incluye">Incluye</button>
             <button type="button" class="inc-btn inc-btn-no${!isIncluye ? ' active' : ''}" data-action="no-incluye">No incluye</button>
+            ${isCustom ? `<button type="button" class="inc-btn-del" title="Eliminar" style="margin-left:4px;background:#FEE2E2;color:#B91C1C;border:none;border-radius:6px;padding:3px 7px;cursor:pointer;font-size:13px;line-height:1;">✕</button>` : ''}
           </div>
         </div>
         <div class="inc-item-desc" style="display:${isIncluye ? 'block' : 'none'};">
@@ -231,6 +241,19 @@ class FormManager {
         </div>
       `;
       container.appendChild(div);
+
+      // Label input (custom items only)
+      if (isCustom) {
+        div.querySelector('.inc-label-input').addEventListener('input', (e) => {
+          this.inclusiones[idx].label = e.target.value;
+          this._schedulePreviewUpdate(300);
+        });
+        div.querySelector('.inc-btn-del').addEventListener('click', () => {
+          this.inclusiones.splice(idx, 1);
+          this._renderInclusionesUI(container);
+          this._schedulePreviewUpdate(150);
+        });
+      }
 
       // Toggle buttons
       div.querySelectorAll('.inc-btn').forEach(btn => {
@@ -256,6 +279,25 @@ class FormManager {
         });
       }
     });
+
+    // Botón agregar
+    const addBtn = document.createElement('button');
+    addBtn.type = 'button';
+    addBtn.className = 'inc-add-btn';
+    addBtn.innerHTML = `
+      <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+      </svg>
+      Agregar inclusión
+    `;
+    addBtn.addEventListener('click', () => {
+      this.inclusiones.push({ label: '', estado: 'incluye', descripcion: '' });
+      this._renderInclusionesUI(container);
+      // Focus en el último label input
+      const inputs = container.querySelectorAll('.inc-label-input');
+      if (inputs.length) inputs[inputs.length - 1].focus();
+    });
+    container.appendChild(addBtn);
   }
 
   _escHtml(str) {
@@ -300,11 +342,82 @@ class FormManager {
     updateNav();
   }
 
+  // ── Fullscreen preview ───────────────────────
+  _initFullscreen() {
+    const overlay = document.getElementById('preview-fs-overlay');
+    const iframe  = document.getElementById('preview-fs-iframe');
+    const closeBtn = document.getElementById('fs-close');
+    const prevBtn  = document.getElementById('fs-prev');
+    const nextBtn  = document.getElementById('fs-next');
+    const pageNum  = document.getElementById('fs-page-num');
+    const scroll   = document.getElementById('preview-scroll');
+
+    if (!overlay || !iframe || !scroll) return;
+
+    let fsPage = 1;
+
+    const openFs = () => {
+      fsPage = this._currentPage;
+      this._renderFsPage(fsPage);
+      overlay.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    };
+
+    const closeFs = () => {
+      overlay.classList.remove('active');
+      document.body.style.overflow = '';
+    };
+
+    const updateFsNav = () => {
+      if (pageNum) pageNum.textContent = fsPage;
+      if (prevBtn) prevBtn.disabled = fsPage <= 1;
+      if (nextBtn) nextBtn.disabled = fsPage >= 5;
+    };
+
+    this._renderFsPage = (page) => {
+      const data   = this._collectData();
+      const images = { ...this.images };
+      const html   = buildPDFPreview(data, images, page);
+      const doc = iframe.contentDocument || iframe.contentWindow.document;
+      doc.open(); doc.write(html); doc.close();
+      updateFsNav();
+    };
+
+    scroll.addEventListener('click', (e) => {
+      // Don't trigger if scrollbar was clicked
+      if (e.target.closest('button, a, input, textarea, select')) return;
+      openFs();
+    });
+
+    if (closeBtn) closeBtn.addEventListener('click', closeFs);
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) closeFs();
+    });
+
+    if (prevBtn) prevBtn.addEventListener('click', () => {
+      if (fsPage > 1) { fsPage--; this._renderFsPage(fsPage); }
+    });
+    if (nextBtn) nextBtn.addEventListener('click', () => {
+      if (fsPage < 5) { fsPage++; this._renderFsPage(fsPage); }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (!overlay.classList.contains('active')) return;
+      if (e.key === 'Escape') closeFs();
+      if (e.key === 'ArrowLeft' && fsPage > 1) { fsPage--; this._renderFsPage(fsPage); }
+      if (e.key === 'ArrowRight' && fsPage < 5) { fsPage++; this._renderFsPage(fsPage); }
+    });
+  }
+
   // ── Default textarea values (solo si están vacíos) ───
   _setDefaults() {
     const map = [
-      ['consideraciones-generales', this._defaultGenerales()],
-      ['exclusiones',               this._defaultExclusiones()],
+      ['consideraciones-generales',  this._defaultGenerales()],
+      ['exclusiones',                this._defaultExclusiones()],
+      ['forma-pago',                 this._defaultFormaPago()],
+      ['validez-oferta',             this._defaultValidezOferta()],
+      ['condiciones-inicio',         this._defaultCondicionesInicio()],
+      ['consideraciones-finales',    this._defaultConsideracionesFinales()],
     ];
     map.forEach(([id, text]) => {
       const el = document.getElementById(id);
@@ -316,8 +429,12 @@ class FormManager {
   _restoreDefaults() {
     const el = (id) => document.getElementById(id);
     [
-      ['consideraciones-generales', this._defaultGenerales()],
-      ['exclusiones',               this._defaultExclusiones()],
+      ['consideraciones-generales',  this._defaultGenerales()],
+      ['exclusiones',                this._defaultExclusiones()],
+      ['forma-pago',                 this._defaultFormaPago()],
+      ['validez-oferta',             this._defaultValidezOferta()],
+      ['condiciones-inicio',         this._defaultCondicionesInicio()],
+      ['consideraciones-finales',    this._defaultConsideracionesFinales()],
     ].forEach(([id, text]) => { if (el(id)) el(id).value = text; });
   }
 
@@ -334,6 +451,28 @@ class FormManager {
     return `No se incluyen aportes a cajas y/o colegios profesionales y tasa de revisión de planos municipalidad interviniente. No se consideran en esta cotización cualquier otro tipo de tasas y/o sellados de ningún ente oficial (municipalidad, provincia, nación, etc.) adicionales.
 
 No incluye este presupuesto lo no contemplado en el mismo y todo tipo de instalación y provisión de bomba, cableado de datos y corrientes débiles en instalación eléctrica, artefactos de iluminación y su colocación, artefactos de gas ni su instalación. Solías ni umbrales de granito. Anafe, cocina, campana de extracción de cocina, calefón/termotanque, lavarropas, ni ningún otro electrodomestico. Provisión ni colocación de cerco definitivo. Parquización, piscina, veredas ni accesos vehiculares.`;
+  }
+
+  _defaultFormaPago() {
+    return `Opción 1: pago contado. Bonificación del 5% sobre el valor final.
+Opción 2: Anticipo 40%, saldo por avances durante el plazo de ejecución de la obra.
+Opción financiación: consultar condiciones.`;
+  }
+
+  _defaultValidezOferta() {
+    return `Este presupuesto tiene una válidez de 5 días a partir de la fecha de emisión. La empresa se reserva el derecho de actualizar los precios, condiciones y cualquier particularidad que considere necesario de acuerdo a variaciones del mercado.`;
+  }
+
+  _defaultCondicionesInicio() {
+    return `Para dar inicio a los trabajos, el cliente debe:
+ - Abonar el anticipo correspondiente y/o pago total.
+ - Asegurar el acceso libre y despejado al terreno.
+ - Disponer de un punto de conexión a servicios esenciales (agua, electricidad, gas, cloacas) o prever una alternativa para el suministro.`;
+  }
+
+  _defaultConsideracionesFinales() {
+    return `Este documento es una cotización comercial y no implica un compromiso contractual. Las condiciones finales se definirán en el contrato de obra.
+Los precios indicados en este presupuesto no incluyen impuestos.`;
   }
 
   // ── Button wiring ────────────────────────────
@@ -505,6 +644,10 @@ No incluye este presupuesto lo no contemplado en el mismo y todo tipo de instala
       consideracionesGenerales: val('consideraciones-generales'),
       inclusiones:              this.inclusiones,
       exclusiones:              val('exclusiones'),
+      formaPago:                val('forma-pago'),
+      validezOferta:            val('validez-oferta'),
+      condicionesInicio:        val('condiciones-inicio'),
+      consideracionesFinales:   val('consideraciones-finales'),
     };
   }
 

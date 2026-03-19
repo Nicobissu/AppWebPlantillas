@@ -441,25 +441,19 @@ function buildPage5(data) {
       <p class="bp-sm">Este valor constituye una referencia orientativa para la propuesta presentada y podrá variar según ajustes de diseño, definición final de terminaciones, condiciones del terreno y alcance definitivo de obra.</p>
 
       <p class="st">Forma de pago:</p>
-      <p class="bp">Opción 1: pago contado. Bonificación del 5% sobre el valor final.</p>
-      <p class="bp">Opción 2: Anticipo 40%, saldo por avances durante el plazo de ejecución de la obra.</p>
-      <p class="bp-i">Opción financiación: consultar condiciones.</p>
+      ${renderFreeText(data.formaPago || 'Opción 1: pago contado. Bonificación del 5% sobre el valor final.\nOpción 2: Anticipo 40%, saldo por avances durante el plazo de ejecución de la obra.\nOpción financiación: consultar condiciones.')}
 
       <p class="st">Validez de la oferta:</p>
-      <p class="bp">Este presupuesto tiene una válidez de 5 días a partir de la fecha de emisión. La empresa se reserva el derecho de actualizar los precios, condiciones y cualquier particularidad que considere necesario de acuerdo a variaciones del mercado.</p>
+      ${renderFreeText(data.validezOferta || 'Este presupuesto tiene una válidez de 5 días a partir de la fecha de emisión. La empresa se reserva el derecho de actualizar los precios, condiciones y cualquier particularidad que considere necesario de acuerdo a variaciones del mercado.')}
 
       <p class="st">Plazo de ejecución de la obra:</p>
       <p class="bp">El plazo estimado para la ejecución de la obra es de tres (3) meses, contados a partir del ingreso efectivo al terreno, sujeto a la disponibilidad de materiales y proceso de fabricación.</p>
 
       <p class="st">Condiciones de inicio de obra:</p>
-      <p class="bp">Para dar inicio a los trabajos, el cliente debe:</p>
-      <p class="bullet">- Abonar el anticipo correspondiente y/o pago total.</p>
-      <p class="bullet">- Asegurar el acceso libre y despejado al terreno.</p>
-      <p class="bullet">- Disponer de un punto de conexión a servicios esenciales (agua, electricidad, gas, cloacas) o prever una alternativa para el suministro.</p>
+      ${renderFreeText(data.condicionesInicio || 'Para dar inicio a los trabajos, el cliente debe:\n - Abonar el anticipo correspondiente y/o pago total.\n - Asegurar el acceso libre y despejado al terreno.\n - Disponer de un punto de conexión a servicios esenciales (agua, electricidad, gas, cloacas) o prever una alternativa para el suministro.')}
 
       <p class="st">Consideraciones finales:</p>
-      <p class="bp">Este documento es una cotización comercial y no implica un compromiso contractual. Las condiciones finales se definirán en el contrato de obra.</p>
-      <p class="bp">Los precios indicados en este presupuesto no incluyen impuestos.</p>
+      ${renderFreeText(data.consideracionesFinales || 'Este documento es una cotización comercial y no implica un compromiso contractual. Las condiciones finales se definirán en el contrato de obra.\nLos precios indicados en este presupuesto no incluyen impuestos.')}
 
       <p class="bp-i" style="margin-top:14px;">Quedamos a su disposición para cualquier consulta.</p>
 

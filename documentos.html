@@ -152,6 +152,72 @@
 
     /* Oculto por filtro */
     .doc-card-sq.hidden-filter { display: none; }
+
+    /* ── Tarjeta particular (custom) ── */
+    .doc-card-sq.particular {
+      border-style: dashed;
+    }
+    .btn-delete-card {
+      position: absolute;
+      top: 10px; right: 10px;
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      background: #FEE2E2;
+      color: #B91C1C;
+      border: none;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px;
+      line-height: 1;
+      opacity: 0;
+      transition: opacity 0.15s;
+      z-index: 10;
+    }
+    .doc-card-sq.particular:hover .btn-delete-card { opacity: 1; }
+
+    /* ── Modal ── */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.4);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 1000;
+      padding: 16px;
+    }
+    .modal-overlay.hidden { display: none; }
+    .modal-box {
+      background: #fff;
+      border-radius: 16px;
+      padding: 28px 28px 24px;
+      width: 100%; max-width: 420px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    }
+    .modal-title { font-size: 15px; font-weight: 700; color: #1A1A1A; margin-bottom: 18px; }
+    .modal-label { font-size: 11px; font-weight: 600; color: #374151; margin-bottom: 4px; display: block; }
+    .modal-input, .modal-select, .modal-textarea {
+      width: 100%;
+      border: 1.5px solid #E2E8F0;
+      border-radius: 8px;
+      padding: 8px 10px;
+      font-size: 13px;
+      color: #374151;
+      outline: none;
+      background: #FAFAFA;
+      transition: border-color 0.15s;
+      font-family: inherit;
+    }
+    .modal-input:focus, .modal-select:focus, .modal-textarea:focus { border-color: #1B4332; background: #fff; }
+    .modal-textarea { resize: vertical; min-height: 72px; }
+    .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px; }
+    .btn-cancel {
+      padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600;
+      border: 1.5px solid #E2E8F0; background: #fff; color: #6B7280; cursor: pointer;
+    }
+    .btn-cancel:hover { border-color: #9CA3AF; }
+    .btn-save {
+      padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600;
+      border: none; background: #1B4332; color: #fff; cursor: pointer;
+    }
+    .btn-save:hover { background: #145228; }
   </style>
 </head>
 <body class="bg-[#F8F5F0]">
@@ -216,6 +282,17 @@
         </svg>
         <input type="text" id="search-input" class="search-box" placeholder="Buscar documento…" />
       </div>
+
+      <div class="w-px h-6 bg-[#E2E8F0] hidden sm:block"></div>
+
+      <!-- Botón nueva inclusión -->
+      <button id="btn-nueva" onclick="abrirModal()"
+        class="inline-flex items-center gap-1.5 text-xs font-600 font-semibold px-3 py-1.5 rounded-lg border-1.5 border border-[#1B4332] text-[#1B4332] bg-white hover:bg-[#1B4332] hover:text-white transition-colors ml-auto">
+        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+        </svg>
+        Nueva Inclusión
+      </button>
 
       <div class="w-px h-6 bg-[#E2E8F0] hidden sm:block"></div>
 
@@ -687,6 +764,43 @@
 
   </main>
 
+  <!-- MODAL NUEVA INCLUSIÓN -->
+  <div id="modal-overlay" class="modal-overlay hidden" onclick="cerrarModalOverlay(event)">
+    <div class="modal-box" onclick="event.stopPropagation()">
+      <p class="modal-title">Nueva Inclusión Particular</p>
+
+      <div class="mb-3">
+        <label class="modal-label" for="m-titulo">Título</label>
+        <input id="m-titulo" type="text" class="modal-input" placeholder="Ej: Memoria Descriptiva" maxlength="60" />
+      </div>
+
+      <div class="mb-3">
+        <label class="modal-label" for="m-desc">Descripción</label>
+        <textarea id="m-desc" class="modal-textarea" placeholder="Breve descripción del documento…" maxlength="150"></textarea>
+      </div>
+
+      <div class="mb-1">
+        <label class="modal-label" for="m-cat">Categoría</label>
+        <select id="m-cat" class="modal-select">
+          <option value="comercial">Comercial</option>
+          <option value="contractual">Contractual</option>
+          <option value="planificacion">Planificación</option>
+          <option value="ejecucion">Ejecución</option>
+          <option value="calidad">Calidad</option>
+          <option value="seguridad">Seguridad</option>
+          <option value="logistica">Logística</option>
+          <option value="entrega">Entrega</option>
+          <option value="postobra">Post-Obra</option>
+        </select>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="cerrarModal()">Cancelar</button>
+        <button class="btn-save" onclick="guardarInclusion()">Guardar</button>
+      </div>
+    </div>
+  </div>
+
   <!-- FOOTER -->
   <footer class="border-t border-[#E2E8F0] bg-white mt-10">
     <div class="max-w-7xl mx-auto px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-2">
@@ -696,19 +810,34 @@
   </footer>
 
   <script>
-    const cards = document.querySelectorAll('.doc-card-sq');
     const filterBtns = document.querySelectorAll('.filter-btn');
     const searchInput = document.getElementById('search-input');
     const noResults = document.getElementById('no-results');
+    const grid = document.getElementById('docs-grid');
     let activeCat = 'all';
+
+    const CAT_COLORS = {
+      comercial:    { color: '#1B4332', light: '#DCFCE7' },
+      contractual:  { color: '#1C3A5C', light: '#DBEAFE' },
+      planificacion:{ color: '#7C3AED', light: '#EDE9FE' },
+      ejecucion:    { color: '#B45309', light: '#FEF3C7' },
+      calidad:      { color: '#0E7490', light: '#CFFAFE' },
+      seguridad:    { color: '#B91C1C', light: '#FEE2E2' },
+      logistica:    { color: '#0369A1', light: '#DBEAFE' },
+      entrega:      { color: '#065F46', light: '#D1FAE5' },
+      postobra:     { color: '#4B5563', light: '#F3F4F6' },
+    };
+
+    /* ── Filtros ── */
+    function allCards() { return document.querySelectorAll('.doc-card-sq'); }
 
     function applyFilters() {
       const q = searchInput.value.toLowerCase().trim();
       let visible = 0;
-      cards.forEach(card => {
-        const cat = card.dataset.cat;
+      allCards().forEach(card => {
+        const cat  = card.dataset.cat;
         const name = card.dataset.name || '';
-        const matchCat  = activeCat === 'all' || cat === activeCat;
+        const matchCat    = activeCat === 'all' || cat === activeCat;
         const matchSearch = !q || name.includes(q);
         if (matchCat && matchSearch) {
           card.classList.remove('hidden-filter');
@@ -730,6 +859,82 @@
     });
 
     searchInput.addEventListener('input', applyFilters);
+
+    /* ── Modal ── */
+    function abrirModal() {
+      document.getElementById('m-titulo').value = '';
+      document.getElementById('m-desc').value = '';
+      document.getElementById('m-cat').value = 'comercial';
+      document.getElementById('modal-overlay').classList.remove('hidden');
+      document.getElementById('m-titulo').focus();
+    }
+    function cerrarModal() {
+      document.getElementById('modal-overlay').classList.add('hidden');
+    }
+    function cerrarModalOverlay(e) {
+      if (e.target === document.getElementById('modal-overlay')) cerrarModal();
+    }
+
+    /* ── Crear tarjeta ── */
+    function crearTarjeta(id, titulo, desc, cat) {
+      const { color, light } = CAT_COLORS[cat] || { color: '#6B7280', light: '#F3F4F6' };
+      const div = document.createElement('div');
+      div.className = 'doc-card-sq available particular';
+      div.dataset.cat  = cat;
+      div.dataset.name = titulo.toLowerCase();
+      div.dataset.id   = id;
+      div.style.cssText = `--cat-color:${color}; --cat-color-light:${light};`;
+      div.innerHTML = `
+        <button class="btn-delete-card" title="Eliminar" onclick="eliminarInclusion('${id}', this)">✕</button>
+        <div class="cat-icon">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+        </div>
+        <p class="card-title">${escHtml(titulo)}</p>
+        <p class="card-desc">${escHtml(desc)}</p>
+        <span class="badge-disponible">Particular</span>
+      `;
+      grid.appendChild(div);
+    }
+
+    function escHtml(s) {
+      return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    /* ── Guardar ── */
+    function guardarInclusion() {
+      const titulo = document.getElementById('m-titulo').value.trim();
+      const desc   = document.getElementById('m-desc').value.trim();
+      const cat    = document.getElementById('m-cat').value;
+      if (!titulo) { document.getElementById('m-titulo').focus(); return; }
+
+      const id = 'inc_' + Date.now();
+      const items = JSON.parse(localStorage.getItem('inclusiones') || '[]');
+      items.push({ id, titulo, desc, cat });
+      localStorage.setItem('inclusiones', JSON.stringify(items));
+
+      crearTarjeta(id, titulo, desc, cat);
+      cerrarModal();
+      applyFilters();
+    }
+
+    /* ── Eliminar ── */
+    function eliminarInclusion(id, btn) {
+      if (!confirm('¿Eliminar esta inclusión particular?')) return;
+      const card = btn.closest('.doc-card-sq');
+      card.remove();
+      const items = JSON.parse(localStorage.getItem('inclusiones') || '[]').filter(i => i.id !== id);
+      localStorage.setItem('inclusiones', JSON.stringify(items));
+      applyFilters();
+    }
+
+    /* ── Cargar guardadas ── */
+    (function cargarGuardadas() {
+      const items = JSON.parse(localStorage.getItem('inclusiones') || '[]');
+      items.forEach(({ id, titulo, desc, cat }) => crearTarjeta(id, titulo, desc, cat));
+    })();
   </script>
 
 </body>
